@@ -19,7 +19,7 @@ export function cleanPaste(data) {
   const html = data.getData('text/html')
   if (/<math[\s>]/i.test(html)) {
     const text = fromHtml(html)
-    if (text) return plainLetters(text)
+    if (text) return plainChars(text)
   }
   const raw = data.getData('text/plain').replace(/\r\n?/g, '\n')
   const fixed = repairPlain(raw)
@@ -131,11 +131,16 @@ const tidy = (s) => s
 
 /** Plain-text repair, in the order the damage has to be undone. */
 export function repairPlain(text) {
-  return powers(stackedLimits(joinFragments(plainLetters(text))))
+  return powers(stackedLimits(joinFragments(plainChars(text))))
 }
 
-// 𝑥 and the rest of the maths-font alphabet (what PDFs and Word give) back to ordinary letters.
-const plainLetters = (s) => s.replace(/[\u{1D400}-\u{1D7FF}ℎ]/gu, (c) => c.normalize('NFKC'))
+// Maths-font letters (𝑥, ℎ: what PDFs and Word give) back to ordinary ones, and the invisible
+// operators Word and MathML put after a function name out of the way. A row holding only
+// one of those looks blank but is not, and would otherwise split a formula.
+const plainChars = (s) => s
+  .replace(/[\u{1D400}-\u{1D7FF}ℎ]/gu, (c) => c.normalize('NFKC'))
+  .replace(/[\u2061-\u2064]/g, (c) => INVISIBLE[c])
+  .replace(/[\u200b-\u200d\u2060\ufeff]/g, '')
 
 // Function names and differentials are the only words allowed inside a formula.
 const FUNCS = /cosec|arcsin|arccos|arctan|sinh|cosh|tanh|lim|sin|cos|tan|cot|sec|csc|log|ln|exp|det|max|min|\bd[a-z]\b/g
@@ -182,6 +187,13 @@ const SUB = /^[a-z]\s*(?:→|->|⟶)\s*\S+$/
 function stackedLimits(text) {
   const lines = text.split(/\r?\n/)
   const out = []
+  // Blank rows may sit before the expression and between its rows; step over
+  // them only when more maths follows, so a paragraph break is never swallowed.
+  const skip = (k) => {
+    let n = k
+    while (n < lines.length && !lines[n].trim()) n++
+    return mathy(lines[n] ?? '') ? n : k
+  }
   for (let i = 0; i < lines.length; i++) {
     const m = /^(.*?)\blim\s*(.*)$/i.exec(lines[i].trim())
     const under = m?.[2] || (lines[i + 1] ?? '').trim()
@@ -189,13 +201,13 @@ function stackedLimits(text) {
       out.push(lines[i])
       continue
     }
-    let j = m[2] ? i + 1 : i + 2
-    if (!(lines[j] ?? '').trim() && mathy(lines[j + 1] ?? '')) j++   // a gap row before the expression
+    let j = skip(m[2] ? i + 1 : i + 2)
     const top = (lines[j] ?? '').trim()
-    const bottom = (lines[j + 1] ?? '').trim()
+    const b = skip(j + 1)
+    const bottom = (lines[b] ?? '').trim()
     const fraction = mathy(top) && mathy(bottom) && !/=/.test(top + bottom)
     const expr = fraction ? `${group(top)}/${group(bottom)}` : mathy(top) ? top : ''
-    j += fraction ? 2 : expr ? 1 : 0
+    j = fraction ? b + 1 : expr ? j + 1 : j
     const next = (lines[j] ?? '').trim()
     splice(out, `${m[1]}lim_(${under})${expr ? ` ${expr}` : ''}`, next)
     i = next ? j : j - 1
