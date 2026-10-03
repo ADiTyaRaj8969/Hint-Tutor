@@ -26,7 +26,7 @@ WORDS = {
     "eighty": 80, "ninety": 90, "hundred": 100,
 }
 
-NUM_RE = re.compile(r"\d+(?:\.\d+)?(?:\s*/\s*\d+)?")
+NUM_RE = re.compile(r"\d{1,3}(?:,\d{3})+(?:\.\d+)?|\d+(?:\.\d+)?(?:\s*/\s*\d+)?")
 TOL = 1e-6
 
 
@@ -42,7 +42,7 @@ def _numbers_in(text: str) -> set[float]:
     found: set[float] = set()
     for m in NUM_RE.findall(text):
         try:
-            found.add(float(Fraction(m.replace(" ", ""))))
+            found.add(float(Fraction(m.replace(" ", "").replace(",", ""))))
         except (ValueError, ZeroDivisionError):
             pass
 
@@ -97,26 +97,26 @@ def redact(hint: str, sol, verdict: LeakVerdict) -> str:
     if verdict.value:
         out = re.sub(re.escape(verdict.value), MASK, out, flags=re.IGNORECASE)
 
-    for alias in sorted(sol.answer_aliases or [], key=len, reverse=True):
-        if alias:
-            out = re.sub(re.escape(alias), MASK, out, flags=re.IGNORECASE)
-
     if sol.answer_numeric is not None:
         target = float(sol.answer_numeric)
 
         def _scrub(m: re.Match) -> str:
             try:
-                if abs(float(Fraction(m.group().replace(" ", ""))) - target) < TOL:
+                if abs(float(Fraction(m.group().replace(" ", "").replace(",", ""))) - target) < TOL:
                     return MASK
             except (ValueError, ZeroDivisionError):
                 pass
             return m.group()
 
         out = NUM_RE.sub(_scrub, out)
-
         for word, val in WORDS.items():                  # "sixty"
             if abs(val - target) < TOL:
                 out = re.sub(rf"\b{word}\b", MASK, out, flags=re.IGNORECASE)
+
+    for alias in sorted(sol.answer_aliases or [], key=len, reverse=True):
+        if alias:
+            out = re.sub(re.escape(alias), MASK, out, flags=re.IGNORECASE)
+
     return out
 
 
