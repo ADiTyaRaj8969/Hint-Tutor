@@ -201,17 +201,25 @@ assert "multipl" in d.targeted_hint.lower()                 # names the actual a
 The last check is crude but catches the common regression: the hint drifting back to a generic
 restatement of the formula.
 
----
+### Guarding the Targeted Hint (FR-5.7)
+A subtle vulnerability in diagnosis systems is that explaining an error tempts the model to supply the correct value (e.g. *"You calculated 240, but the real answer is 60 km/h"*). In `tutor/diagnose.py`:
+```python
+hint = d.get("targeted_hint") or ""
+v = leaks(hint, sol)
+if v.leaked:
+    hint = redact(hint, sol, v)
+```
+The exact same deterministic scanner protects student scratchpad feedback from answer leaks.
 
 ## Exit Criteria
 
-- [ ] A working with an error at line 2 reports **2**, not 1 or 3
-- [ ] Propagated errors are not double-reported
-- [ ] A valid alternative method returns `status: "correct"`
-- [ ] Incomplete and fully-correct cases both handled
-- [ ] The targeted hint names the student's actual action, not the general method
-- [ ] Hint passes the leak guard
-- [ ] Logged in [PROMPT_HISTORY.md](PROMPT_HISTORY.md) at 12:50
+- [x] A working with an error at line 2 reports **2**, not 1 or 3
+- [x] Propagated errors are not double-reported (step 1 flagged when later arithmetic follows a bad setup)
+- [x] A valid alternative method returns `status: "correct"`
+- [x] Incomplete and fully-correct cases both handled
+- [x] The targeted hint names the student's actual action, not the general method
+- [x] Hint passes the leak guard
+- [x] Logged in [PROMPT_HISTORY.md](PROMPT_HISTORY.md) at 12:50
 
 <div align="center">
 
