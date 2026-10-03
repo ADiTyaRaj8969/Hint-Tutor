@@ -132,6 +132,7 @@ export default function App() {
                 <Working working={working} setWorking={setWorking} onCheck={check} diag={diag} busy={busy === 'check'} />
               </div>
             )}
+            {sid && <div className="slot slot-ask"><Ask onAsk={ask} /></div>}
           </div>
 
           <div className="col-right">
@@ -153,7 +154,6 @@ export default function App() {
                 )}
               </AnimatePresence>
             </div>
-            {sid && <div className="slot slot-ask"><Ask onAsk={ask} /></div>}
           </div>
         </div>
 

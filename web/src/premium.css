@@ -340,7 +340,7 @@ kbd {
 .mchip, .mchip b, .mchip i, .mchip em { text-transform: none; }
 .mchip b { font-size: 15px; }
 
-/* ───────────── layout: working + ask beside the ladder, compare full width ───────────── */
+/* ───────────── layout: working and ask under the problem, beside the ladder; compare full width ───────────── */
 .workspace { align-items: start; }
 .full { margin-top: 20px; }
 .compare { grid-template-columns: 1fr 1fr; }
