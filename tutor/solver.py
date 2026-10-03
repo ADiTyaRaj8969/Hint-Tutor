@@ -53,11 +53,22 @@ def _coerce(data: dict) -> Solution:
     )
 
 
+_CACHE: dict[str, Solution] = {}      # per-problem, so repeat Starts never re-solve (NFR-1)
+
+
 def solve(problem: str) -> Solution:
     """Solve privately. Never render the result (FR-2.3).
 
-    One repair retry on malformed output before giving up (FR-2.4).
+    One repair retry on malformed output before giving up (FR-2.4). Successful
+    solutions are cached by problem text.
     """
+    key = " ".join(problem.split())
+    if key not in _CACHE:
+        _CACHE[key] = _solve_uncached(problem)
+    return _CACHE[key]
+
+
+def _solve_uncached(problem: str) -> Solution:
     prompt = SOLVER_PROMPT.format(problem=problem)
     try:
         data = complete_json(prompt, system=SOLVER_SYSTEM)

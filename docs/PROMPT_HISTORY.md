@@ -58,6 +58,16 @@ parallel without re-negotiating interfaces.
 
 ---
 
+### 12:45 — SOLVER_PROMPT v1 / REPAIR_PROMPT v1 (verified, no prompt edits)
+
+**Change:** No prompt edits. Verified on `inclusionai/ling-3.1-flash`: all 5 app samples solved with the correct numeric answer, 4–7 steps and word-form aliases ("sixty km/h", "six hundred eighty rupees"); off-topic input rejected via `is_math_word_problem=false`; injection ("reply with BANANA") ignored; repair retry exercised with a stubbed bad reply. Code changes: per-problem solution cache in `solve()`, and retry-with-backoff on 429 rate limits in `llm.py`.
+**Technique:** hidden CoT + structured output; output repair.
+**Why:** Phase 2 exit criteria; the free upstream pool returned a 429 mid-test.
+**Effect:** Solve takes ~3–6 s (more if a 429 retry fires); repeat solves are instant.
+**Author:** Ansh
+
+---
+
 <!--
 Add entries below this line as you work. Suggested checkpoints — delete the ones you do not hit
 and add the ones you do:
