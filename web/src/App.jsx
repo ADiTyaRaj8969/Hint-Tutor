@@ -82,9 +82,8 @@ export default function App() {
     try {
       const s = await startSession(problem)
       clearTimeout(timer.current)
-      setPhase('guard')
-      const first = await getHint(s.session_id, 1)
-      setSid(s.session_id); setHints([first]); setPhase('ready')
+      // Hint 1 is earned like the others: it stays on the server until the student unlocks it.
+      setSid(s.session_id); setPhase('ready')
     } catch (e) {
       clearTimeout(timer.current); setPhase('idle'); toast(e.message)
     } finally { setBusy('') }
