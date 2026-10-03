@@ -4,8 +4,6 @@
 
 ### Timestamped log of every prompt written or changed
 
-[![Team](https://img.shields.io/badge/Team-5-7b2d8e?style=flat-square)](#)
-[![Problem](https://img.shields.io/badge/Problem-13-0b3d62?style=flat-square)](#)
 [![From](https://img.shields.io/badge/from-11%3A00%20AM-b35309?style=flat-square)](#)
 [![Required](https://img.shields.io/badge/rubric-required-b30000?style=flat-square)](#)
 

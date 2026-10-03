@@ -4,8 +4,6 @@
 
 ### Hint-Based Math Tutor — the three-hour build
 
-[![Team](https://img.shields.io/badge/Team-5-7b2d8e?style=flat-square)](#)
-[![Problem](https://img.shields.io/badge/Problem-13-0b3d62?style=flat-square)](#)
 [![Date](https://img.shields.io/badge/3%20October%202026-1a7f64?style=flat-square)](#)
 [![Window](https://img.shields.io/badge/11%3A00%20–%2014%3A00-b35309?style=flat-square)](#)
 

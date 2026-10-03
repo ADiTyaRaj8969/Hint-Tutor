@@ -4,11 +4,6 @@
 
 ### Guiding students to the answer — never handing it over
 
-[![Problem](https://img.shields.io/badge/Problem-13-0b3d62?style=for-the-badge)](docs/PHASES_INDEX.md)
-[![Theme](https://img.shields.io/badge/Theme-C%20·%20Reasoning%20%26%20Multi--Step-1a7f64?style=for-the-badge)](docs/SRS.md)
-[![Team](https://img.shields.io/badge/Team-5-7b2d8e?style=for-the-badge)](#)
-[![Venue](https://img.shields.io/badge/Venue-MB306-b35309?style=for-the-badge)](#)
-
 **Prompt Engineering for Generative AI** · 3-Hour Hackathon · 3 October 2026
 Marwadi University — Marwadi Chandarana Group
 

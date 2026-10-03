@@ -4,8 +4,6 @@
 
 ### Labelled case set, metrics, and the V1-vs-V2 comparison
 
-[![Team](https://img.shields.io/badge/Team-5-7b2d8e?style=flat-square)](#)
-[![Problem](https://img.shields.io/badge/Problem-13-0b3d62?style=flat-square)](#)
 [![Cases](https://img.shields.io/badge/labelled%20cases-12-1a7f64?style=flat-square)](#)
 [![Model](https://img.shields.io/badge/model-ling--3.1--flash-b35309?style=flat-square)](#)
 
