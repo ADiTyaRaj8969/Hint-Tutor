@@ -3,30 +3,39 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+XAI_BASE_URL = "https://api.x.ai/v1"
+
 class LLMError(Exception):
     """Raised for any provider failure; caught by the UI (FR-6.6)."""
+
+def _client():
+    """Grok speaks the OpenAI wire format, so the openai client works unchanged."""
+    from openai import OpenAI
+    key = os.getenv("XAI_API_KEY")
+    if not key:
+        raise LLMError("XAI_API_KEY missing. Copy .env.example to .env and add your key.")
+    return OpenAI(api_key=key, base_url=os.getenv("XAI_BASE_URL", XAI_BASE_URL))
 
 def complete(prompt: str, *, system: str = "", json_mode: bool = False,
              temperature: float = 0.2, max_tokens: int = 1200) -> str:
     """Send one prompt, return raw text. The only place a vendor SDK appears."""
-    provider = os.getenv("LLM_PROVIDER", "gemini")
+    messages = []
+    if system:
+        messages.append({"role": "system", "content": system})
+    messages.append({"role": "user", "content": prompt})
+
+    extra = {"response_format": {"type": "json_object"}} if json_mode else {}
     try:
-        if provider == "gemini":
-            import google.generativeai as genai
-            genai.configure(api_key=os.environ["GOOGLE_API_KEY"])
-            model = genai.GenerativeModel(
-                os.getenv("LLM_MODEL", "gemini-2.0-flash"),
-                system_instruction=system or None,
-            )
-            cfg = {"temperature": temperature, "max_output_tokens": max_tokens}
-            if json_mode:
-                cfg["response_mime_type"] = "application/json"
-            return model.generate_content(prompt, generation_config=cfg).text
-        raise LLMError(f"Unknown provider: {provider}")
+        r = _client().chat.completions.create(
+            model=os.getenv("LLM_MODEL", "grok-4"),
+            messages=messages,
+            temperature=temperature,
+            max_tokens=max_tokens,
+            **extra,
+        )
+        return r.choices[0].message.content or ""
     except LLMError:
-        raise
-    except KeyError:
-        raise LLMError("API key missing. Copy .env.example to .env and add your key.")
+        raise                                    # already friendly, don't re-wrap
     except Exception as e:
         raise LLMError(f"Model call failed: {e}") from e
 
