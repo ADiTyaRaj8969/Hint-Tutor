@@ -175,6 +175,12 @@ upstream provider rate-limits in bursts.
 **Why:** The first V1 run lost two cases to rate limits, so V1 and V2 were not scored over the same set.
 **Effect:** V1: 12/12 measured, 0 errored; leak rate 0/12, wrong-step 4/4. Both versions now cover the identical case set; both metrics are 100% / 0%, so the evidence that separates them is structural (guarantee + off-topic guardrail), as the demo script states.
 
+### 14:40 — Full-Stack Integration & Offline Test Suite Verification
+
+**Change:** Verified full-stack React + FastAPI deployment (`web/dist` + `server.py`), confirmed offline testing parity (`test_guard`, `test_guardrails`, `test_app`), and finalized prompt explanation assignments.
+**Technique:** End-to-end integration and dual-interface verification.
+**Effect:** All offline suites green; prompt ownership and presentation cross-quizzing fully aligned across team members.
+
 ---
 
 ## Prompt Inventory
@@ -183,13 +189,13 @@ Every member must be able to explain every row.
 
 | Prompt constant | File | Technique | Explained by |
 |---|---|---|---|
-| `V1_SINGLE_PROMPT` | `tutor/prompts.py` | Zero-shot baseline | |
-| `V1_DIAGNOSE_PROMPT` | `tutor/prompts.py` | Zero-shot baseline for the stretch metric | |
-| `SOLVER_PROMPT` | `tutor/prompts.py` | Hidden CoT + structured output | |
-| `REPAIR_PROMPT` | `tutor/prompts.py` | Output repair | |
-| `HINT_LADDER_PROMPT` | `tutor/prompts.py` | Few-shot + role | |
-| `LEAK_CRITIQUE_PROMPT` | `tutor/prompts.py` | Self-critique | |
-| `DIAGNOSE_PROMPT` | `tutor/prompts.py` | Decomposition + comparative reasoning | |
+| `V1_SINGLE_PROMPT` | `tutor/prompts.py` | Zero-shot baseline | Aditya |
+| `V1_DIAGNOSE_PROMPT` | `tutor/prompts.py` | Zero-shot baseline for the stretch metric | Aditya |
+| `SOLVER_PROMPT` | `tutor/prompts.py` | Hidden CoT + structured output | Aditya |
+| `REPAIR_PROMPT` | `tutor/prompts.py` | Output repair | Aditya |
+| `HINT_LADDER_PROMPT` | `tutor/prompts.py` | Few-shot + role | Madhuri |
+| `LEAK_CRITIQUE_PROMPT` | `tutor/prompts.py` | Self-critique | Madhuri |
+| `DIAGNOSE_PROMPT` | `tutor/prompts.py` | Decomposition + comparative reasoning | Madhuri |
 
 ---
 
