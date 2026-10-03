@@ -295,10 +295,10 @@ kbd {
 /* ───────────── layout: working and ask under the problem, beside the ladder; compare full width ───────────── */
 .workspace { align-items: start; }
 .full { margin-top: 20px; }
-.compare { grid-template-columns: 1fr 1fr; }
-/* On one column, keep the reading order: problem, pipeline, ladder, working, ask, compare. */
+/* On one column, keep the reading order: problem, pipeline, ladder, working, ask, compare,
+   and let every card take the full width rather than shrinking to its content. */
 @media (max-width: 920px) {
-  .workspace { display: flex; flex-direction: column; gap: 20px; }
+  .workspace { display: flex; flex-direction: column; gap: 20px; align-items: stretch; }
   .col-left, .col-right { display: contents; }
   .slot-problem { order: 1; } .slot-pipe { order: 2; } .slot-ladder { order: 3; }
   .slot-working { order: 4; } .slot-ask { order: 5; }

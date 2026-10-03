@@ -107,7 +107,7 @@ export function Hero() {
         Prompt Engineering for Generative AI
       </motion.span>
       <motion.h1 initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.1 }}>
-        Learn the <span className="grad">method</span>,<br />never get the answer handed over.
+        Learn the <span style={{ whiteSpace: 'nowrap' }}><span className="grad">method</span>,</span><br />never get the answer handed over.
       </motion.h1>
       <motion.p initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.25 }}>
         Three progressive hints, and a deterministic check in code that the final answer never
