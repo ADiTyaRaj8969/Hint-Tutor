@@ -3,18 +3,18 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-XAI_BASE_URL = "https://api.x.ai/v1"
+OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
 
 class LLMError(Exception):
     """Raised for any provider failure; caught by the UI (FR-6.6)."""
 
 def _client():
-    """Grok speaks the OpenAI wire format, so the openai client works unchanged."""
+    """OpenRouter speaks the OpenAI wire format, so the openai client works unchanged."""
     from openai import OpenAI
-    key = os.getenv("XAI_API_KEY")
+    key = os.getenv("OPENROUTER_API_KEY")
     if not key:
-        raise LLMError("XAI_API_KEY missing. Copy .env.example to .env and add your key.")
-    return OpenAI(api_key=key, base_url=os.getenv("XAI_BASE_URL", XAI_BASE_URL))
+        raise LLMError("OPENROUTER_API_KEY missing. Copy .env.example to .env and add your key.")
+    return OpenAI(api_key=key, base_url=os.getenv("OPENROUTER_BASE_URL", OPENROUTER_BASE_URL))
 
 def complete(prompt: str, *, system: str = "", json_mode: bool = False,
              temperature: float = 0.2, max_tokens: int = 1200) -> str:
@@ -24,10 +24,12 @@ def complete(prompt: str, *, system: str = "", json_mode: bool = False,
         messages.append({"role": "system", "content": system})
     messages.append({"role": "user", "content": prompt})
 
-    extra = {"response_format": {"type": "json_object"}} if json_mode else {}
+    # ling-3.1-flash rejects response_format (no structured-outputs support), so JSON
+    # is requested in the prompt and parsed tolerantly by complete_json().
+    extra = {}
     try:
         r = _client().chat.completions.create(
-            model=os.getenv("LLM_MODEL", "grok-4.7"),
+            model=os.getenv("LLM_MODEL", "inclusionai/ling-3.1-flash"),
             messages=messages,
             temperature=temperature,
             max_tokens=max_tokens,
