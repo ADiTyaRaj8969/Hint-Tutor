@@ -189,13 +189,19 @@ lad = generate_ladder("Ravi is 3 times as old as his son...", sol)
 
 ---
 
+### Pedagogical Scaffolding & Cognitive Load
+The 3-tier structure directly mirrors Vygotsky’s *Zone of Proximal Development* (ZPD):
+1. **L1 (Orient)** stimulates schema activation without extraneous cognitive load.
+2. **L2 (Set up)** scaffolds structural translation from English prose into formal mathematical relationships.
+3. **L3 (Walk through)** models procedural execution through worked-example effects, withholding solely the terminal computation so the student experiences autonomous task completion.
+
 ## Exit Criteria
 
-- [ ] Three hints returned as valid JSON on all 5 samples
-- [ ] Levels visibly differ in specificity — read them aloud to each other
-- [ ] L3 is useful but stops short of the final computation
-- [ ] `{{`/`}}` escaping verified — no `KeyError`
-- [ ] Logged in [PROMPT_HISTORY.md](PROMPT_HISTORY.md) at 11:45
+- [x] Three hints returned as valid JSON on all 5 samples
+- [x] Levels visibly differ in specificity — read them aloud to each other
+- [x] L3 is useful but stops short of the final computation
+- [x] `{{`/`}}` escaping verified — no `KeyError`
+- [x] Logged in [PROMPT_HISTORY.md](PROMPT_HISTORY.md) at 11:45
 
 <div align="center">
 
