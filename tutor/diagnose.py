@@ -40,15 +40,22 @@ def diagnose(problem: str, working: str, sol: Solution) -> Diagnosis:
     except (TypeError, ValueError):
         step = None
 
-    hint = d.get("targeted_hint", "")
+    # `.get(k, "")` is not enough: the model sends explicit nulls for fields it
+    # considers inapplicable (e.g. targeted_hint when the work is correct),
+    # and `.get` only substitutes the default when the key is absent.
+    hint = d.get("targeted_hint") or ""
     v = leaks(hint, sol)                              # FR-5.7
     if v.leaked:
         hint = redact(hint, sol, v)
 
+    status = d.get("status") or "error"
+    if status not in ("error", "incomplete", "correct"):
+        status = "error"
+
     return Diagnosis(
-        status=d.get("status", "error"),
+        status=status,
         first_wrong_step=step,
-        what_they_did=d.get("what_they_did", ""),
-        why_wrong=d.get("why_wrong", ""),
+        what_they_did=d.get("what_they_did") or "",
+        why_wrong=d.get("why_wrong") or "",
         targeted_hint=hint,
     )

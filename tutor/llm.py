@@ -1,4 +1,4 @@
-import os, json, time
+import os, json, time, random
 
 try:                                 # convenience only — env vars may be set directly
     from dotenv import load_dotenv
@@ -8,8 +8,19 @@ except ImportError:
 
 OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
 
+# The free pool is shared, so 429s from the upstream provider are routine and
+# transient. Retrying costs a few seconds; not retrying costs the demo.
+RETRY_STATUS = {408, 409, 429, 500, 502, 503, 504}
+MAX_ATTEMPTS = 5
+
+
 class LLMError(Exception):
     """Raised for any provider failure; caught by the UI (FR-6.6)."""
+
+
+class _Transient(Exception):
+    """Internal: a failure worth retrying. Never escapes this module."""
+
 
 def _client():
     """OpenRouter speaks the OpenAI wire format, so the openai client works unchanged."""
@@ -18,23 +29,6 @@ def _client():
     if not key:
         raise LLMError("OPENROUTER_API_KEY missing. Copy .env.example to .env and add your key.")
     return OpenAI(api_key=key, base_url=os.getenv("OPENROUTER_BASE_URL", OPENROUTER_BASE_URL))
-
-def _create(messages, temperature, max_tokens, extra):
-    """One chat call, retried on rate limits (free shared pools return 429 in bursts)."""
-    from openai import RateLimitError
-    for attempt in range(3):
-        try:
-            return _client().chat.completions.create(
-                model=os.getenv("LLM_MODEL", "inclusionai/ling-3.1-flash"),
-                messages=messages,
-                temperature=temperature,
-                max_tokens=max_tokens,
-                **extra,
-            )
-        except RateLimitError:
-            if attempt == 2:
-                raise
-            time.sleep(2 * (attempt + 1))      # 2s, then 4s
 
 
 def complete(prompt: str, *, system: str = "", json_mode: bool = False,
@@ -50,17 +44,41 @@ def complete(prompt: str, *, system: str = "", json_mode: bool = False,
     # It is also a reasoning model: thinking tokens eat into max_tokens and can leave the
     # reply empty, so thinking is switched off. Step-by-step work lives in the prompts.
     extra = {"extra_body": {"reasoning": {"enabled": False}}}
-    try:
-        r = _create(messages, temperature, max_tokens, extra)
-        choice = r.choices[0]
-        text = choice.message.content or ""
-        if not text.strip() or choice.finish_reason == "length":
-            raise LLMError("The model returned an empty or truncated reply. Try again.")
-        return text
-    except LLMError:
-        raise                                    # already friendly, don't re-wrap
-    except Exception as e:
-        raise LLMError(f"Model call failed: {e}") from e
+
+    last = None
+    for attempt in range(MAX_ATTEMPTS):
+        try:
+            r = _client().chat.completions.create(
+                model=os.getenv("LLM_MODEL", "inclusionai/ling-3.1-flash"),
+                messages=messages,
+                temperature=temperature,
+                max_tokens=max_tokens,
+                **extra,
+            )
+            choice = r.choices[0]
+            text = choice.message.content or ""
+            if not text.strip() or choice.finish_reason == "length":
+                # Transient on a shared pool — worth another go before failing.
+                raise _Transient("empty or truncated reply")
+            return text
+
+        except LLMError:
+            raise                                # missing key etc. — don't retry
+        except _Transient as e:
+            last = e
+        except Exception as e:
+            if getattr(e, "status_code", None) not in RETRY_STATUS:
+                raise LLMError(f"Model call failed: {e}") from e
+            last = e
+
+        if attempt < MAX_ATTEMPTS - 1:           # 1s, 2s, 4s, 8s + jitter
+            time.sleep(2 ** attempt + random.uniform(0, 0.5))
+
+    raise LLMError(
+        f"The model is rate-limited or unavailable after {MAX_ATTEMPTS} attempts. "
+        f"Wait a moment and try again, or set LLM_MODEL to another OpenRouter model. "
+        f"Last error: {last}"
+    )
 
 
 def complete_json(prompt: str, *, system: str = "", temperature: float = 0.2) -> dict:
