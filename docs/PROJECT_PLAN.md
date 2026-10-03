@@ -2,6 +2,10 @@
 
 **Team 5 · Problem 13 · 3 October 2026 · Window: 11:00 AM – 2:00 PM**
 
+> **Detailed prompts per phase:** [PHASES_INDEX.md](PHASES_INDEX.md) — each phase has its own
+> document containing the complete prompt text, a line-by-line rationale for every rule, tests,
+> and exit criteria. This file is the schedule; those files are the build instructions.
+
 The build is split into **8 phases**. Phases 1–5 are the critical path to a demoable prototype;
 phases 6–8 are what the rubric scores beyond "it runs". If time runs short, cut Phase 7 polish
 first — never cut Phase 4 (leak guard) or Phase 6 (evaluation), as both are graded requirements.

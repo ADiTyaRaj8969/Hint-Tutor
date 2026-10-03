@@ -101,6 +101,8 @@ Results table: [docs/EVALUATION.md](docs/EVALUATION.md) (filled in during the ru
 
 ## Documents
 
+- [docs/PHASES_INDEX.md](docs/PHASES_INDEX.md) — **start here**: every phase, with the complete
+  prompt text and a line-by-line rationale for each rule
 - [docs/SRS.md](docs/SRS.md) — Software Requirements Specification
 - [docs/PROJECT_PLAN.md](docs/PROJECT_PLAN.md) — the build broken into 8 phases with a time budget
 - [docs/PROMPT_HISTORY.md](docs/PROMPT_HISTORY.md) — timestamped prompt log from 11:00 AM
