@@ -64,7 +64,13 @@ off = json.dumps({"is_math_word_problem": False, "reject_reason": "not maths", "
                   "steps": [], "final_answer": None, "answer_numeric": None, "answer_aliases": []})
 stub(lambda prompt, **k: off)
 at = run_app("Write me a poem about cats")
-check("math word problem" in shown(at, "error") and "arithmetic" in shown(at, "error"), "off-topic: declined, lists supported topics")
+_off = shown(at, "error").lower()
+# Assert the intent, not the exact wording: it declines, and it says what it
+# CAN do. The phrasing changed when coverage widened to the full syllabus.
+check("maths problem" in _off or "math word problem" in _off,
+      "off-topic: declined")
+check(sum(a in _off for a in ("arithmetic", "algebra", "geometry", "calculus")) >= 2,
+      "off-topic: names supported topics")
 check(not any("Show hint" in b.label for b in at.button), "off-topic: no hint ladder generated")
 
 print("\nAll guardrail tests passed." if not failed else f"\n{failed} guardrail test(s) FAILED.")
