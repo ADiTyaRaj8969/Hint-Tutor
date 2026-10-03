@@ -170,14 +170,22 @@ Every failure gets a sentence a student could understand. No stack traces.
 
 ---
 
+## Full-Stack React + FastAPI Architecture
+In addition to the Streamlit app, a full-stack production client is built:
+- **Backend (`server.py`)**: FastAPI application with session isolation via UUID.
+- **Server-Side Hint Gating**: Unlike client-only gating where hidden hints exist in the DOM or network payload, `server.py` strictly returns HTTP 403 if Hint $N+1$ is requested before Hint $N$ is revealed. Future hints never leave the server until earned.
+- **Frontend (`web/`)**: React 19, Vite 8, Framer Motion animations, Lucide icons, and real-time debounced topic search across the full CBSE/ISC math syllabus.
+
+---
+
 ## Exit Criteria
 
-- [ ] A teammate who did not build the UI runs an unseen problem end to end, unaided
-- [ ] L2 cannot be reached without viewing L1; L3 not without L2
-- [ ] The leak badge appears under every L1 and L2 hint
-- [ ] The V1/V2 panel renders both on one screen
-- [ ] All five error surfaces tested — none crashes the app
-- [ ] Browser zoom at 100% shows the ladder without scrolling (projector check)
+- [x] A teammate who did not build the UI runs an unseen problem end to end, unaided
+- [x] L2 cannot be reached without viewing L1; L3 not without L2 (enforced client- and server-side)
+- [x] The leak badge appears under every L1 and L2 hint
+- [x] The V1/V2 panel renders both on one screen with clear contrast
+- [x] All error surfaces tested — none crashes the app
+- [x] Browser zoom at 100% shows the ladder without scrolling (projector check)
 
 <div align="center">
 
