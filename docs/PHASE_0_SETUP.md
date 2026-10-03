@@ -223,6 +223,22 @@ against `max_tokens` — enough of them and the reply comes back empty. `complet
 reasoning and raises on an empty or truncated response rather than returning `""` for a caller to
 trip over. The step-by-step work we actually want lives in the prompts, not in hidden thinking.
 
+### Full Stack Runtime Options
+
+The project supports two client interfaces over the unified `tutor/` reasoning engine:
+1. **React 19 + Vite UI (`web/`) with FastAPI (`server.py`)**:
+   - Production build compiled into `web/dist`.
+   - Run backend: `python -m uvicorn server:app --port 8000`
+   - Access at `http://localhost:8000`
+2. **Streamlit Desktop UI (`app.py`)**:
+   - Run: `streamlit run app.py`
+   - Access at `http://localhost:8501`
+
+### Resilience & 429 Backoff Architecture
+Because the free OpenRouter tier relies on shared upstream compute, transient rate limits (`429`) and server errors (`502`, `503`, `504`) are automatically handled in `tutor/llm.py` via `MAX_ATTEMPTS = 5` with exponential backoff:
+$$\text{delay} = 2^{\text{attempt}} + \text{jitter}(0, 0.5)\text{ s}$$
+This prevents demo disruptions while maintaining strict deterministic safety.
+
 ## Smoke Test
 
 ```bash
@@ -231,10 +247,11 @@ python -c "from tutor.llm import complete; print(complete('Reply with the single
 
 ## Exit Criteria
 
-- [ ] Every member runs the smoke test successfully on their own machine
-- [ ] `git status` shows `.env` as ignored, not untracked
-- [ ] [PROMPT_HISTORY.md](PROMPT_HISTORY.md) has the 11:00 entry committed
-- [ ] Function signatures in [SRS.md](SRS.md) §3.2–3.3 agreed, so the three tracks can split
+- [x] Every member runs the smoke test successfully on their own machine
+- [x] `git status` shows `.env` as ignored, not untracked
+- [x] [PROMPT_HISTORY.md](PROMPT_HISTORY.md) has the 11:00 entry committed
+- [x] Function signatures in [SRS.md](SRS.md) §3.2–3.3 agreed, so the three tracks can split
+- [x] Frontend dependencies built and offline test suites verified
 
 ---
 
