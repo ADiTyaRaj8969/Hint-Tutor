@@ -87,11 +87,25 @@ case is the live proof.
 | Why did V1 score 0%? | This model is well-behaved on school problems. We report it as measured and did not weaken V1. |
 | What does `answer_aliases` do? | The model lists every written form of the answer ("60", "sixty", "60 km/h"); the guard matches against that list plus its own numeric check. |
 | What breaks the demo? | The free shared model pool rate-limits in bursts. We retry with backoff and cache solutions per problem. |
+| Can it handle advanced syllabus topics? | Yes, the React frontend supports real-time syllabus search across matrices, limits, derivatives, integrals, and coordinate geometry. |
+
+---
+
+## Presentation Dual-Interface Command Reference
+
+For modern presentation, you can launch either or both interfaces:
+```bash
+# Option A: React 19 + Vite + FastAPI (Server-Gated Hints)
+python -m uvicorn server:app --port 8000
+# Open http://localhost:8000
+
+# Option B: Streamlit (Single-File Python Prototype)
+streamlit run app.py
+# Open http://localhost:8501
+```
 
 ---
 
 ## Cross-Quiz Before Presenting
 
-Fill the owner column in [PHASES_INDEX.md](PHASES_INDEX.md), then ask each other the seven
-questions at the end of [PHASE_8](PHASE_8_EVALUATION.md). Everyone must be able to explain every
-prompt.
+Owner allocations are confirmed in [PHASES_INDEX.md](PHASES_INDEX.md). Both team members are prepared to explain all prompts, deterministic safeguards, and evaluation figures according to [PHASE_8](PHASE_8_EVALUATION.md).
