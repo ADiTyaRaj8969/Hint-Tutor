@@ -146,15 +146,19 @@ Results table → [docs/EVALUATION.md](docs/EVALUATION.md)
 
 ## Quick Start
 
-> [!NOTE]
-> The code is scaffolded across the phase documents — see
-> [Phase 0 · Setup](docs/PHASE_0_SETUP.md) to build it.
-
 ```bash
 pip install -r requirements.txt
-cp .env.example .env        # add your API key
-streamlit run app.py
+cp .env.example .env        # add your OpenRouter key
 ```
+
+The React app and its API, in two terminals:
+
+```bash
+python -m uvicorn server:app --port 8000
+cd web && npm install && npm run dev        # http://localhost:5173
+```
+
+Or the original Streamlit app: `streamlit run app.py`
 
 Run the evaluation harness:
 
@@ -163,6 +167,24 @@ python -m eval.run_eval --version v1
 python -m eval.run_eval --version v2
 python -m eval.run_eval --compare
 ```
+
+---
+
+## Deploy
+
+The app runs on [Render](https://render.com) as one Docker web service
+([`Dockerfile`](Dockerfile), [`render.yaml`](render.yaml)): the image builds the React UI and
+FastAPI serves it next to the API.
+
+1. In Render, choose **New → Blueprint** and pick this repository.
+2. Enter `OPENROUTER_API_KEY` when asked, then **Apply**.
+
+Every push to `main` runs [CI](.github/workflows/ci.yml): the backend tests, a lint and build of
+the UI, and a smoke test of the Docker image. Render deploys a commit only after those checks pass.
+
+> [!NOTE]
+> Sessions live in memory, so the service runs as a single instance. On Render's free plan it
+> sleeps after 15 minutes without traffic, and the first request after that takes about a minute.
 
 ---
 

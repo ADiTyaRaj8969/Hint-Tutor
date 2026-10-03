@@ -1,0 +1,5 @@
+# What the API server needs at run time; the Docker image installs only this.
+python-dotenv>=1.0
+openai>=1.40                  # OpenRouter exposes an OpenAI-compatible API
+fastapi>=0.115
+uvicorn>=0.30

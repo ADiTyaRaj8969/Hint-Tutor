@@ -1,0 +1,17 @@
+# Render Blueprint: one web service that builds the Dockerfile and serves both
+# the API and the React UI. A commit goes live only after its GitHub checks pass.
+services:
+  - type: web
+    name: hint-tutor
+    runtime: docker
+    plan: free
+    region: singapore
+    branch: main
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /api/health
+    autoDeployTrigger: checksPass
+    envVars:
+      - key: OPENROUTER_API_KEY
+        sync: false            # asked for once, when the Blueprint is created
+      - key: LLM_MODEL
+        value: inclusionai/ling-3.1-flash

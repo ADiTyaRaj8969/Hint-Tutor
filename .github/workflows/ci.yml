@@ -1,0 +1,61 @@
+name: CI
+
+# Render deploys main only after these checks pass (render.yaml: checksPass).
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  backend:
+    name: Backend tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: requirements*.txt
+      - run: pip install -r requirements.txt
+      - name: Leak guard, Streamlit UI and guardrail tests (model calls are stubbed)
+        run: |
+          python -m tests.test_guard
+          python -m tests.test_app
+          python -m tests.test_guardrails
+
+  frontend:
+    name: Frontend lint and build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run build
+
+  image:
+    name: Docker image smoke test
+    runs-on: ubuntu-latest
+    needs: [backend, frontend]
+    steps:
+      - uses: actions/checkout@v7
+      - run: docker build -t hint-tutor .
+      - name: Start the container and check the API and the UI answer
+        run: |
+          docker run -d --name app -p 8000:10000 -e PORT=10000 hint-tutor
+          for i in $(seq 1 30); do curl -fs localhost:8000/api/health && break; sleep 1; done
+          curl -fsS localhost:8000/api/health
+          curl -fsS localhost:8000/api/samples > /dev/null
+          curl -fsS localhost:8000/ | grep -q '<div id="root">'
+          curl -fsS localhost:8000/favicon.svg > /dev/null
+      - name: Container logs
+        if: failure()
+        run: docker logs app

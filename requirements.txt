@@ -1,3 +1,2 @@
-streamlit>=1.30
-python-dotenv>=1.0
-openai>=1.40                  # OpenRouter exposes an OpenAI-compatible API
+-r requirements-server.txt
+streamlit>=1.30               # the original Streamlit UI (app.py) and its tests

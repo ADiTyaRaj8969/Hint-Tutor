@@ -12,7 +12,6 @@ from dataclasses import dataclass, field
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 import os
@@ -114,6 +113,12 @@ _BY_TOPIC = {
     "applications-of-derivatives": 15, "integrals": 16, "matrices": 17,
     "vector-algebra": 18, "complex-numbers": 19,
 }
+
+
+@app.get("/api/health")
+def health():
+    """For the host's health check: no model call, no session."""
+    return {"ok": True}
 
 
 @app.get("/api/samples")
@@ -279,10 +284,8 @@ def compare(sid: str):
 
 
 # ── serve the built React app, when it exists ────────────────────────
+# Mounted last so every /api route above wins; html=True serves index.html at
+# "/", and the favicon and other files at the root of dist are served too.
 DIST = os.path.join(os.path.dirname(__file__), "web", "dist")
 if os.path.isdir(DIST):
-    app.mount("/assets", StaticFiles(directory=os.path.join(DIST, "assets")), name="assets")
-
-    @app.get("/")
-    def index():
-        return FileResponse(os.path.join(DIST, "index.html"))
+    app.mount("/", StaticFiles(directory=DIST, html=True), name="web")
