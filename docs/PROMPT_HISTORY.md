@@ -68,6 +68,16 @@ parallel without re-negotiating interfaces.
 
 ---
 
+### 12:55 — HINT_LADDER_PROMPT v1 (verified, no prompt edits)
+
+**Change:** No prompt edits. Verified the `{{ }}` escaping (no KeyError) and ran one live ladder on the Ravi/ages problem.
+**Technique:** few-shot (2 exemplars + counter-example) + role/persona.
+**Why:** Phase 3 exit criteria — levels must differ in specificity and L3 must stop short of the answer.
+**Effect:** L1 concept-only (no digits), L2 gives `3x + 10 = 2(x + 10)` unevaluated, L3 solves for x and leaves "multiply by 3"; lengths 160 / 168 / 206 chars; 0 leaks at L1-L2. Note: L3 is close to the answer (x = 10 shown) but within FR-3.4; left unchanged because the guard skips L3 by design.
+**Author:** Ansh
+
+---
+
 <!--
 Add entries below this line as you work. Suggested checkpoints — delete the ones you do not hit
 and add the ones you do:
