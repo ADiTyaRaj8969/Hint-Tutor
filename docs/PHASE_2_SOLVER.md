@@ -222,15 +222,24 @@ assert inj.answer_numeric == 60                              # FR-6.2 holds
 
 ---
 
+### Symbolic & Higher-Order Math Handling
+For advanced topics (calculus, matrices, vectors, complex numbers), `answer_numeric` is explicitly set to `null` to avoid inventing spurious numbers. The downstream leak guard relies on `answer_aliases` as the sole authority:
+- Derivatives: e.g. `2cos(2x)` and `2 cos 2x`
+- Integrals: e.g. `x^2/2 + C`, `(1/2)x^2 + C`, `0.5x^2 + C`
+- Matrices: e.g. `[[2, 3], [1, 4]]` and `det = 5`
+
+### In-Memory Solution Cache
+Solutions are cached in memory (`_CACHE = {}`) keyed by whitespace-normalized problem text. Repeat hint requests and UI re-renders bypass the LLM entirely, cutting latency from ~4s to 0ms (NFR-1).
+
 ## Exit Criteria
 
-- [ ] `solve()` returns valid JSON on all 5 sample problems
-- [ ] `answer_aliases` is non-empty and includes the word form
-- [ ] Off-topic input returns `is_math_word_problem: false` without crashing
-- [ ] The injection test still solves the mathematics
-- [ ] Repair retry verified by forcing one malformed response
-- [ ] Solution cached per problem
-- [ ] Logged in [PROMPT_HISTORY.md](PROMPT_HISTORY.md) at 11:30
+- [x] `solve()` returns valid JSON on all 5 sample problems
+- [x] `answer_aliases` is non-empty and includes the word form
+- [x] Off-topic input returns `is_math_word_problem: false` without crashing
+- [x] The injection test still solves the mathematics
+- [x] Repair retry verified by forcing one malformed response
+- [x] Solution cached per problem in `_CACHE`
+- [x] Logged in [PROMPT_HISTORY.md](PROMPT_HISTORY.md) at 11:30
 
 <div align="center">
 
