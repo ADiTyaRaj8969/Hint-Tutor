@@ -180,34 +180,6 @@ kbd {
 @keyframes stripes { to { background-position: 22.6px 0; } }
 .rung-locked + .btn-unlock { margin-top: 12px; }
 
-/* leak-guard report */
-.guard { position: relative; overflow: hidden; background: var(--screen); color: #e8e5dc; padding: 14px 16px; margin-top: 14px; }
-.guard-head { margin: 0; padding: 0; border: 0; background: none; font-family: var(--mono); font-size: 12.5px; font-weight: 700; flex-wrap: nowrap; }
-.guard-head.ok { color: #4dffb0; background: none; }
-.guard-head.warn { color: var(--accent); background: none; }
-.guard-head.neutral { color: #b8b5ab; background: none; }
-.guard-rules { margin-top: 10px; gap: 8px; }
-.rule {
-  display: inline-flex; align-items: center; gap: 6px; padding: 3px 9px; font-family: var(--mono); font-size: 11px; font-weight: 700;
-  border: 2px solid #5a5a55; color: #b8b5ab; background: transparent; transition: all 0.2s;
-}
-.rule.pass { color: #4dffb0; border-color: #4dffb0; background: rgba(77, 255, 176, 0.1); }
-.rule.hit { color: var(--ink); border-color: var(--accent); background: var(--accent); }
-.scan {
-  display: block !important; position: absolute; left: 0; right: 0; top: 0; height: 4px; background: var(--accent);
-  box-shadow: 0 0 0 1px var(--ink); animation: scanline 1.3s linear 1 forwards;
-}
-@keyframes scanline { from { top: 0; opacity: 1; } to { top: 100%; opacity: 0; } }
-
-.stamp {
-  position: absolute; right: 12px; top: 10px; z-index: 2; padding: 3px 12px; transform: rotate(-6deg);
-  font-family: var(--mono); font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em;
-  border: 3px solid; background: var(--screen); pointer-events: none;
-}
-.stamp.pass { color: #4dffb0; border-color: #4dffb0; box-shadow: 3px 3px 0 #4dffb0; }
-.stamp.hit { color: var(--accent); border-color: var(--accent); box-shadow: 3px 3px 0 var(--accent); }
-@media (max-width: 560px) { .stamp { position: static; display: inline-block; margin-bottom: 8px; } }
-
 .confetti { position: absolute; left: 50%; top: 40%; width: 0; height: 0; z-index: 5; pointer-events: none; }
 .confetti i { position: absolute; border: 1.5px solid var(--ink); }
 
@@ -279,7 +251,7 @@ kbd {
 
 /* ───────────── small fixes ───────────── */
 .eyebrow svg, .eyebrow .dot { color: var(--ink); }
-.guard-head svg, .result-head svg, .verdict svg, .ask-reply svg, .toast svg { flex: none; }
+.result-head svg, .verdict svg, .ask-reply svg, .toast svg { flex: none; }
 
 /* ───────────── maths: formula cards + constant chips ───────────── */
 .ftile {

@@ -1,80 +1,11 @@
-import { useEffect, useState } from 'react'
-import { AnimatePresence, motion } from 'framer-motion'
-import {
-  Compass, Wrench, Footprints, Lock, LockOpen, ShieldCheck, ShieldAlert,
-  Check, TriangleAlert, ArrowRight, Info,
-} from 'lucide-react'
+import { motion } from 'framer-motion'
+import { Compass, Wrench, Footprints, Lock, LockOpen, ArrowRight } from 'lucide-react'
 import { Confetti, GlowCard, plain, useTypewriter } from './ui'
 
 const LEVELS = {
-  1: { name: 'Orient', icon: Compass, cls: 'l1', contract: 'Concept only — no equation, no arithmetic.' },
-  2: { name: 'Set up', icon: Wrench, cls: 'l2', contract: 'The setup — which value goes where, but not the result.' },
-  3: { name: 'Walk through', icon: Footprints, cls: 'l3', contract: 'The method with real numbers, stopping before the last step.' },
-}
-
-const RULES = [
-  ['alias match', 'alias match'],
-  ['numeric ±1e-6', 'numeric match'],
-  ['equation RHS', 'equation RHS'],
-]
-
-/** Three rule checks that tick over one after another, so the guard is visibly working. */
-function GuardReport({ hint }) {
-  const [step, setStep] = useState(0)
-  useEffect(() => {
-    setStep(0)
-    const ids = [1, 2, 3, 4].map((n) => setTimeout(() => setStep(n), 380 * n))
-    return () => ids.forEach(clearTimeout)
-  }, [hint.hint])
-
-  if (!hint.guarded) {
-    return (
-      <div className="guard">
-        <div className="guard-head neutral">
-          <Info size={17} /> Level 3 may approach the answer — unguarded by design
-        </div>
-      </div>
-    )
-  }
-
-  const done = step >= 4
-  const caught = hint.leak_detected
-  return (
-    <div className="guard">
-      {!done && <div className="scan" key={hint.hint} />}
-      {done && (
-        <motion.span key={hint.hint} className={`stamp ${caught ? 'hit' : 'pass'}`}
-          initial={{ scale: 2.6, opacity: 0, rotate: -18 }} animate={{ scale: 1, opacity: 1, rotate: -6 }}
-          transition={{ type: 'spring', stiffness: 520, damping: 18 }}>
-          {caught ? 'Intercepted' : 'Clean'}
-        </motion.span>
-      )}
-      <div className={`guard-head ${!done ? 'neutral' : caught ? 'warn' : 'ok'}`}>
-        {!done ? <span className="spinner" style={{ width: 15, height: 15 }} />
-          : caught ? <ShieldAlert size={18} /> : <ShieldCheck size={18} />}
-        {!done ? 'Scanning for the answer…'
-          : caught ? `Leak intercepted (${hint.leak_where}) — hint regenerated before display`
-            : 'Leak check passed — the answer is not in this hint'}
-      </div>
-      <div className="guard-rules">
-        {RULES.map(([label, key], i) => {
-          const checked = step > i
-          const hit = checked && caught && hint.leak_where === key
-          return (
-            <motion.span
-              key={label}
-              className={`rule ${checked ? (hit ? 'hit' : 'pass') : ''}`}
-              animate={checked ? { scale: [0.9, 1.08, 1] } : {}}
-              transition={{ duration: 0.35 }}
-            >
-              {checked ? (hit ? <TriangleAlert size={13} /> : <Check size={13} />) : <span className="spinner" style={{ width: 11, height: 11, borderWidth: 1.5 }} />}
-              {label}
-            </motion.span>
-          )
-        })}
-      </div>
-    </div>
-  )
+  1: { name: 'Orient', icon: Compass, cls: 'l1' },
+  2: { name: 'Set up', icon: Wrench, cls: 'l2' },
+  3: { name: 'Walk through', icon: Footprints, cls: 'l3' },
 }
 
 function HintCard({ hint, latest }) {
@@ -94,14 +25,6 @@ function HintCard({ hint, latest }) {
       <p className="hint-text">
         {body}{typing && <span className="caret" />}
       </p>
-      <p className="contract">{meta.contract}</p>
-      <AnimatePresence>
-        {(!latest || done) && (
-          <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} transition={{ duration: 0.4 }}>
-            <GuardReport hint={hint} />
-          </motion.div>
-        )}
-      </AnimatePresence>
     </GlowCard>
   )
 }

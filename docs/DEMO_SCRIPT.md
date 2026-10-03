@@ -29,8 +29,8 @@ will probe, and every claim below is backed by a test or a number in [EVALUATION
 |---|---|---|---|
 | 0:00 | **The problem** | Title slide / app header | "Giving a student the answer early ends the learning. We built a tutor that guides in three steps and **cannot** reveal the answer at levels 1 and 2." |
 | 0:30 | **Unseen input** | Ask a judge for a word problem. Type it live, press Start. | "This is not one of our samples." (If the wait is long, explain the pipeline below while it runs.) |
-| 1:15 | **The ladder** | Unlock hint 1 → hint 2 → hint 3. Point at the green badge each time. | "Concept, then setup, then walkthrough — each more specific. The green badge is a deterministic check that the answer is not in the text." |
-| 2:15 | **The guarantee** | Stay on the badge | "The check is **Python, not a prompt**. A model that leaks can also wrongly say it didn't. If the check fires we regenerate with the leaked value named; if that fails, we redact. String replacement cannot fail — that is why we say *never*." |
+| 1:15 | **The ladder** | Unlock hint 1 → hint 2 → hint 3. | "Concept, then setup, then walkthrough — each more specific. Before a hint reaches the screen, a deterministic check confirms the answer is not in the text." |
+| 2:15 | **The guarantee** | Point at **Leak guard** in *How it works* | "The check is **Python, not a prompt**. A model that leaks can also wrongly say it didn't. If the check fires we regenerate with the leaked value named; if that fails, we redact. String replacement cannot fail — that is why we say *never*." |
 | 3:00 | **V1 vs V2** | Tick **Compare V1 vs V2** | "V1 is the one-prompt version most teams would write. Same problem, side by side." |
 | 3:30 | **Wrong step** | Paste the working below, press Check my steps | "It names the **first** wrong step and the hint refers to what the student actually did, not the general method." |
 | 4:15 | **Guardrails** | Type `Write me a poem about cats`, then the injection line | "Off-topic is declined. Injection is ignored." |
