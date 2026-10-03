@@ -186,16 +186,28 @@ This table **is** the guardrail demo. Run it top to bottom; it takes about 90 se
 | 6 | *(5000-char paste)* | Length warning |
 | 7 | *(invalid API key)* | Friendly connection error |
 
+### Automated Test Verification (`tests/test_guardrails.py`)
+All 7 guardrail pathways are rigorously verified without touching the live API using mock stubs:
+```bash
+python -m tests.test_guardrails
+```
+Validates:
+- Direct answer request patterns (`ASK_PATTERNS`)
+- Off-topic syllabus boundaries
+- One-cycle JSON repair before graceful stop
+- Provider exceptions and safety block translations
+
 ---
 
 ## Exit Criteria
 
-- [ ] All seven cases produce a clean, student-readable message
-- [ ] No traceback reaches the browser in any case
-- [ ] The injection test still solves the mathematics correctly
-- [ ] Refusals say what the system *can* do, not only what it won't
-- [ ] The demo script above has been run start to finish once
-- [ ] Logged in [PROMPT_HISTORY.md](PROMPT_HISTORY.md) at 13:15
+- [x] All seven cases produce a clean, student-readable message
+- [x] No traceback reaches the browser in any case
+- [x] The injection test still solves the mathematics correctly
+- [x] Refusals say what the system *can* do, not only what it won't
+- [x] The demo script above has been run start to finish once
+- [x] Automated offline suite `tests/test_guardrails.py` passes 100%
+- [x] Logged in [PROMPT_HISTORY.md](PROMPT_HISTORY.md) at 13:15
 
 <div align="center">
 
