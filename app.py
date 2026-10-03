@@ -7,8 +7,8 @@ import streamlit as st
 
 from tutor.llm import LLMError
 from tutor.solver import solve
-from tutor.hints import generate_ladder, generate_v1
-from tutor.guard import safe_hint
+from tutor.hints import generate_ladder, generate_v1, parse_v1
+from tutor.guard import safe_hint, leaks
 from tutor.diagnose import diagnose
 from tutor.prompts import (
     is_answer_request, ANSWER_REQUEST_REFUSAL, OFF_TOPIC_REFUSAL,
@@ -30,6 +30,7 @@ MAX_CHARS = 2000
 ss = st.session_state
 ss.setdefault("level", 0)
 ss.setdefault("hints", {})          # level -> (text, verdict), computed once
+ss.setdefault("v1", {})             # problem -> V1 raw text, so reruns never re-call the model
 
 st.title("Hint-Based Math Tutor")
 st.caption("Team 5 · Problem 13 · Progressive hints that never give the answer away")
@@ -149,8 +150,22 @@ if ss.level:
             st.subheader("V1 — single prompt")
             st.caption("Zero-shot. One instruction not to reveal the answer. No verification.")
             try:
-                st.text(generate_v1(ss.problem))
-                st.error("No programmatic check — a leak here reaches the student.")
+                if ss.problem not in ss.v1:
+                    with st.spinner("Running V1…"):
+                        ss.v1[ss.problem] = generate_v1(ss.problem)
+                v1_text = ss.v1[ss.problem]
+                st.text(v1_text)
+                # V1 has no guard of its own; run ours over its output to show what it did.
+                parts = parse_v1(v1_text)
+                hits = [(l, leaks(parts.get(l, ""), ss.sol)) for l in (1, 2)]
+                hits = [(l, v) for l, v in hits if v.leaked]
+                if hits:
+                    l, v = hits[0]
+                    st.error(f"V1 leaked the answer at hint {l} ({v.where}: {v.value}) — "
+                             "and nothing in V1 would have stopped it.")
+                else:
+                    st.warning("V1 did not leak here — but nothing in V1 checks. "
+                               "It relies on the model obeying one instruction.")
             except LLMError as e:
                 st.caption(f"V1 call failed: {e}")
         with b:

@@ -134,6 +134,14 @@ upstream provider rate-limits in bursts.
 
 ---
 
+### 13:25 — UI verification and V1 panel fix (no prompt edit)
+
+**Change:** `app.py`: the Compare panel called `generate_v1()` on every Streamlit rerun, and always showed a red "a leak here reaches the student" banner. V1 output is now cached per problem, and the panel runs the guard over it and reports what actually happened ("V1 leaked at hint 2 (...)" or "V1 did not leak here — but nothing in V1 checks"). Added `tests/test_app.py`, a headless offline UI test (model stubbed): empty/oversized/off-topic input, hint gating, a leaky L2 regenerated before display, static answer-request refusal, V1 called once across reruns.
+**Why:** Phase 5 exit criteria; also an honest demo — V1 did not leak on 11 problems, so a permanent red banner would be wrong.
+**Effect:** 14/14 UI checks pass offline. One live browser run confirmed the ladder reveals in order with a leak badge per hint. Observed ~30 s from Start to hint 1 on the free pool (solve + ladder + guard, with 429 retries) — over the 8 s target; warm up before the demo.
+
+---
+
 ## Prompt Inventory
 
 Every member must be able to explain every row.
