@@ -77,12 +77,16 @@ export function useTypewriter(text, { speed = 14, start = true } = {}) {
   useEffect(() => {
     if (reduce) { setN(text.length); return }
     if (!start) { setN(0); return }
+    // A hidden tab throttles timers to ~1 per second, which would make a tick-counting
+    // typewriter crawl. Derive the length from elapsed time instead, and skip the effect
+    // entirely when nobody can see it.
+    if (document.hidden) { setN(text.length); return }
     setN(0)
-    let i = 0
+    const t0 = performance.now()
     const id = setInterval(() => {
-      i += 1
-      setN(i)
-      if (i >= text.length) clearInterval(id)
+      const n = Math.min(text.length, Math.floor((performance.now() - t0) / speed) + 1)
+      setN(n)
+      if (n >= text.length) clearInterval(id)
     }, speed)
     return () => clearInterval(id)
   }, [text, speed, start, reduce])

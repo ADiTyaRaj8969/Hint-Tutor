@@ -3,6 +3,7 @@
 Every member must be able to explain every prompt in this file.
 The rationale for each rule lives in docs/PHASE_<n>_*.md.
 """
+import re
 
 # Closed topic list for the solver's `topic` field. Kept closed rather than
 # free-text so the Phase 8 per-topic breakdown is groupable; kept long so the
@@ -400,10 +401,24 @@ ASK_PATTERNS = [
 ]
 
 
+# Paraphrases the plain substring list misses: "state the answer", "tell me the number",
+# "ignore your rules ...". Each needs a demand verb near the target word, so ordinary
+# questions such as "can you explain hint 2?" or "is the answer an integer?" pass through.
+ASK_REGEXES = [
+    r"\b(tell|give|show|state|reveal|say|write|just)\b[^.?!]{0,30}\b(answer|solution|result)\b",
+    r"\b(tell|give|show)\s+me\b[^.?!]{0,15}\b(number|value|result|final)\b",
+    r"\bignore\b[^.?!]{0,30}\b(rules|instructions|prompt)\b",
+    r"\bfinal answer\b",
+    r"\bsolve (it|this|that) for me\b",
+    r"\bjust solve\b",
+]
+
+
 def is_answer_request(text: str) -> bool:
     """Keyword check for 'just tell me the answer' (FR-6.3).
 
     Deliberately crude — the real protection is the Phase 4 leak guard. This
     layer only makes the refusal fast and well-worded.
     """
-    return any(p in text.lower() for p in ASK_PATTERNS)
+    low = text.lower()
+    return any(p in low for p in ASK_PATTERNS) or any(re.search(r, low) for r in ASK_REGEXES)
