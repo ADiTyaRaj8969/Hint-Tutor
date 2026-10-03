@@ -25,9 +25,34 @@ export function Nav() {
   )
 }
 
+const TICKER = ['Never leak the answer', 'Three progressive hints', 'Deterministic guard in code',
+  'Server-gated ladder', 'Find the first wrong step', 'Seven guardrails']
+
+function Marquee() {
+  const row = TICKER.map((t) => <span key={t}>{t}<b>✦</b></span>)
+  return (
+    <div className="marquee" aria-hidden="true">
+      <div className="marquee-track">{row}{row}</div>
+    </div>
+  )
+}
+
+function Seal() {
+  return (
+    <svg className="seal" viewBox="0 0 120 120" aria-hidden="true">
+      <defs><path id="sealpath" d="M60,60 m-44,0 a44,44 0 1,1 88,0 a44,44 0 1,1 -88,0" /></defs>
+      <circle cx="60" cy="60" r="56" className="seal-bg" />
+      <text className="seal-text"><textPath href="#sealpath">LEAK-PROOF · LEAK-PROOF · LEAK-PROOF ·</textPath></text>
+      <text x="60" y="68" textAnchor="middle" className="seal-mid">0%</text>
+    </svg>
+  )
+}
+
 export function Hero() {
   return (
     <header className="hero">
+      <Marquee />
+      <Seal />
       <motion.span className="eyebrow" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
         <span className="dot"><Sparkles size={12} /></span>
         Prompt Engineering for Generative AI

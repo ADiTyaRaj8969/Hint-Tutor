@@ -5,7 +5,7 @@ import {
   getSamples, getPractice,
   startSession, getHint, checkWorking, askTutor, getComparison,
 } from './api'
-import { Background } from './components/ui'
+import { Background, ScrollProgress } from './components/ui'
 import { Nav, Hero } from './components/Hero'
 import ProblemPanel from './components/ProblemPanel'
 import Pipeline from './components/Pipeline'
@@ -15,6 +15,7 @@ import Ask from './components/Ask'
 import Compare from './components/Compare'
 import TopicSearch from './components/TopicSearch'
 import './App.css'
+import './premium.css'
 
 function Toasts({ items, dismiss }) {
   return (
@@ -113,6 +114,7 @@ export default function App() {
 
   return (
     <>
+      <ScrollProgress />
       <Background />
       <div className="shell">
         <Nav />

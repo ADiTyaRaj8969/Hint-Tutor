@@ -4,7 +4,7 @@ import {
   Compass, Wrench, Footprints, Lock, LockOpen, ShieldCheck, ShieldAlert,
   Check, TriangleAlert, ArrowRight, Info,
 } from 'lucide-react'
-import { GlowCard, plain, useTypewriter } from './ui'
+import { Confetti, GlowCard, plain, useTypewriter } from './ui'
 
 const LEVELS = {
   1: { name: 'Orient', icon: Compass, cls: 'l1', contract: 'Concept only — no equation, no arithmetic.' },
@@ -42,6 +42,13 @@ function GuardReport({ hint }) {
   return (
     <div className="guard">
       {!done && <div className="scan" key={hint.hint} />}
+      {done && (
+        <motion.span key={hint.hint} className={`stamp ${caught ? 'hit' : 'pass'}`}
+          initial={{ scale: 2.6, opacity: 0, rotate: -18 }} animate={{ scale: 1, opacity: 1, rotate: -6 }}
+          transition={{ type: 'spring', stiffness: 520, damping: 18 }}>
+          {caught ? 'Intercepted' : 'Clean'}
+        </motion.span>
+      )}
       <div className={`guard-head ${!done ? 'neutral' : caught ? 'warn' : 'ok'}`}>
         {!done ? <span className="spinner" style={{ width: 15, height: 15 }} />
           : caught ? <ShieldAlert size={18} /> : <ShieldCheck size={18} />}
@@ -119,8 +126,11 @@ export default function Ladder({ hints, onNext, busy }) {
     <GlowCard initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }}>
       <div className="ladder-head">
         <h2 className="card-title" style={{ margin: 0 }}><LockOpen size={18} /> Hint ladder</h2>
-        <div className="progress" aria-label={`${count} of 3 hints revealed`}><i style={{ width: `${(count / 3) * 100}%` }} /></div>
+        <div className="segs" role="img" aria-label={`${count} of 3 hints revealed`}>
+          {[1, 2, 3].map((n) => <i key={n} className={n <= count ? 'on' : ''} />)}
+        </div>
       </div>
+      {count === 3 && <Confetti key="done" />}
       <p className="card-sub" style={{ marginTop: 6 }}>Each hint is earned: the next level stays on the server until you ask for it.</p>
 
       <div className="rungs">
