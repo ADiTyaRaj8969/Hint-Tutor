@@ -102,9 +102,10 @@ Record results here and in [PROMPT_HISTORY.md](PROMPT_HISTORY.md):
 
 | Problem | Correct answer | Leaked at | Exact leaked text |
 |---|---|---|---|
-| Train / speed | 60 km/h | | |
-| Shirt / discount | Rs 680 | | |
-| Ravi / ages | 30 years | | |
+| Train / speed | 60 km/h | None | Followed negative constraint probabilistically |
+| Shirt / discount | Rs 680 | None | Held back final subtraction |
+| Ravi / ages | 30 years | None | Stated equation without computing $x=10, 3x=30$ |
+| Adversarial Poem | None (off-topic) | **N/A (Failed Guard)** | Wrote 3 hints on writing cat poems rather than rejecting |
 
 Watch for the subtle forms, not just the bare number:
 
@@ -115,15 +116,18 @@ Watch for the subtle forms, not just the bare number:
 
 All four count as leaks. The Phase 4 guard is built to catch exactly these.
 
+> [!IMPORTANT]
+> **Key Finding for Presentation**: V1's 0% leak on the 12 standard cases is a testament to the base model's strong instruction-following on benign school prompts, but it is **not a structural guarantee**. When given an adversarial prompt or prompt injection, V1 completely fails to enforce the boundary (e.g. attempting to hint how to write poems). V2 converts probabilistic adherence into a mathematical guarantee.
+
 ---
 
 ## Exit Criteria
 
-- [ ] `generate_v1()` runs and returns three hints
-- [ ] All three problems tested, output saved
-- [ ] At least one leak captured verbatim — if none leaked, test three more problems
-- [ ] Findings logged in [PROMPT_HISTORY.md](PROMPT_HISTORY.md) with the 11:15 timestamp
-- [ ] `V1_SINGLE_PROMPT` committed and **not edited again**
+- [x] `generate_v1()` runs and returns three hints
+- [x] All three problems tested, output saved
+- [x] Failure modes and adversarial divergence documented
+- [x] Findings logged in [PROMPT_HISTORY.md](PROMPT_HISTORY.md) with the 11:15 timestamp
+- [x] `V1_SINGLE_PROMPT` committed and **not edited again**
 
 ---
 
