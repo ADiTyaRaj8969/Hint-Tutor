@@ -108,8 +108,10 @@ def run(version: str) -> dict:
                 leaked += bool(post)
 
             if "wrong_step" in c:
-                step_total += 1
                 got = step_v1(c) if version == "v1" else step_v2(c, sol)
+                # Counted only after the call returns. Incrementing before it
+                # would score a rate-limit error as a wrong answer.
+                step_total += 1
                 hit = got == c["wrong_step"]
                 step_hits += hit
                 row.update(expected_step=c["wrong_step"], got_step=got, step_correct=hit)
@@ -123,28 +125,34 @@ def run(version: str) -> dict:
               f"step={row.get('step_correct', '-')}"
               + (f"  ERROR {row['error']}" if "error" in row else ""))
 
+    # A case that errored was not measured. Dividing by the full case count
+    # would silently treat an unmeasured case as a clean one and understate
+    # the rate, so the denominator is the cases that actually completed.
     n = len(cases)
+    measured = n - errors
+    rate = (lambda k: round(100 * k / measured, 1) if measured else None)
+
     summary = {
         "version": version,
         "cases": n,
+        "measured": measured,
+        "errors": errors,
         "leak_cases": leaked,
-        "leak_rate": round(100 * leaked / n, 1),
+        "leak_rate": rate(leaked),
         "step_total": step_total,
         "step_hits": step_hits,
         "step_accuracy": round(100 * step_hits / step_total, 1) if step_total else None,
-        "errors": errors,
     }
     if version == "v2":
         summary["pre_guard_leak_cases"] = pre_leaked
-        summary["pre_guard_leak_rate"] = round(100 * pre_leaked / n, 1)
+        summary["pre_guard_leak_rate"] = rate(pre_leaked)
 
-    print(f"\n  Leak Rate @ L1-L2 : {leaked}/{n} = {summary['leak_rate']}%")
+    print(f"\n  Measured          : {measured}/{n} cases ({errors} errored)")
+    print(f"  Leak Rate @ L1-L2 : {leaked}/{measured} = {summary['leak_rate']}%")
     if version == "v2":
-        print(f"  ...before guard   : {pre_leaked}/{n} = {summary['pre_guard_leak_rate']}%")
+        print(f"  ...before guard   : {pre_leaked}/{measured} = {summary['pre_guard_leak_rate']}%")
     if step_total:
         print(f"  Step Localisation : {step_hits}/{step_total} = {summary['step_accuracy']}%")
-    if errors:
-        print(f"  Cases with errors : {errors}")
 
     out = os.path.join(os.path.dirname(__file__), f"results_{version}.json")
     json.dump({"summary": summary, "rows": rows}, open(out, "w"), indent=2)
