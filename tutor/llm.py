@@ -1,7 +1,10 @@
 import os, json
-from dotenv import load_dotenv
 
-load_dotenv()
+try:                                 # convenience only — env vars may be set directly
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
 
 OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
 
