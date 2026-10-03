@@ -117,6 +117,23 @@ upstream provider rate-limits in bursts.
 
 ---
 
+### 12:33 — V1 baseline measured (no prompt edit)
+
+**Change:** None; `V1_SINGLE_PROMPT` stays frozen. Ran it on 11 problems (the 3 from the Phase 1 doc plus 8 case-set problems) and scored L1/L2 with `guard.leaks()`.
+**Why:** Phase 1 requires an honest baseline.
+**Effect:** **0 leaks at L1/L2 on all 11 runs** — this model obeys "do not reveal the answer" in V1. V1's weakness is elsewhere: L3 shows the full substitution (e.g. `3x + 10 = 2(x + 10)`), levels blur, and nothing would catch a leak if one happened. So the V1-vs-V2 argument rests on the guarantee plus the Phase 8 twelve-case numbers, not on a cherry-picked failure. Solver (5 samples, off-topic, injection) and one live ladder run were also verified this way with no prompt changes.
+
+---
+
+### 13:10 — Leak guard fixes (no prompt edit)
+
+**Change:** `tutor/guard.py`: comma-grouped numbers (`1,200`) were parsed as 1 and 200, so a leak of 1200 was missed — the number regex and fraction parser now handle thousands separators. `redact()` ran alias replacement before numeric scrubbing, turning `60.0` into `[hidden].0`; numeric scrub now runs first. Added offline tests (model stubbed): comma leak, clean float redaction, leak -> regenerated clean, two leaks -> redacted, regeneration failure -> redacted, level 3 exempt.
+**Technique:** deterministic guard; self-critique regeneration (`LEAK_CRITIQUE_PROMPT`, unchanged).
+**Why:** The guarantee must hold for every written form of the answer, including ones the model did not list as aliases.
+**Effect:** All guard tests pass with no API calls. Known limitation unchanged: any occurrence of the answer's value flags, including coincidental ones.
+
+---
+
 ## Prompt Inventory
 
 Every member must be able to explain every row.
