@@ -170,37 +170,6 @@ input:focus, textarea:focus, select:focus {
 }
 button:disabled { opacity: 0.45; cursor: not-allowed; box-shadow: none; }
 
-/* ── topic search ─────────────────────────────────────── */
-.topic-search { position: relative; }
-.search-box { position: relative; }
-.topic-list {
-  list-style: none; margin: 10px 0 0; padding: 10px;
-  display: flex; flex-wrap: wrap; gap: 8px;
-  max-height: 190px; overflow-y: auto;
-  border: 2px dashed var(--ink); background: var(--bg);
-}
-.topic-chip {
-  display: inline-flex; align-items: center; gap: 7px;
-  border: var(--line); background: var(--card); color: var(--ink);
-  padding: 6px 11px; font-size: 12.5px; font-weight: 600;
-  cursor: pointer; box-shadow: 2px 2px 0 var(--ink);
-  transition: transform 0.1s, box-shadow 0.1s;
-}
-.topic-chip:hover:not(:disabled) {
-  background: var(--accent); transform: translate(-1px, -1px);
-  box-shadow: 3px 3px 0 var(--ink);
-}
-.chip-tag {
-  font-family: var(--mono); font-size: 9.5px; font-weight: 700;
-  text-transform: uppercase; letter-spacing: 0.05em;
-  padding: 2px 6px; border: 1px solid var(--ink);
-}
-.chip-tag.ready { background: var(--green); color: #fff; }
-.chip-tag.gen { background: var(--accent-2); color: #fff; }
-.topic-busy, .topic-empty, .samples {
-  font-size: 12px; color: var(--ink-faint); margin-top: 8px;
-}
-
 /* ── hint ladder ──────────────────────────────────────── */
 .ladder-head, .hint-top, .result-head, .guard-head {
   display: flex; align-items: center; gap: 10px; flex-wrap: wrap;

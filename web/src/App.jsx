@@ -1,10 +1,7 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { OctagonAlert, X, Sparkles } from 'lucide-react'
-import {
-  getSamples, getPractice,
-  startSession, getHint, checkWorking, askTutor, getComparison,
-} from './api'
+import { startSession, getHint, checkWorking, askTutor, getComparison } from './api'
 import { Background, ScrollProgress } from './components/ui'
 import { Nav, Hero } from './components/Hero'
 import ProblemPanel from './components/ProblemPanel'
@@ -13,7 +10,6 @@ import Ladder from './components/Ladder'
 import Working from './components/Working'
 import Ask from './components/Ask'
 import Compare from './components/Compare'
-import TopicSearch from './components/TopicSearch'
 import './App.css'
 import './premium.css'
 
@@ -36,9 +32,7 @@ function Toasts({ items, dismiss }) {
 }
 
 export default function App() {
-  const [samples, setSamples] = useState([])
   const [problem, setProblem] = useState('')
-  const [picking, setPicking] = useState('')
   const [sid, setSid] = useState(null)
   const [hints, setHints] = useState([])
   const [phase, setPhase] = useState('idle')
@@ -49,8 +43,6 @@ export default function App() {
   const [toasts, setToasts] = useState([])
   const timer = useRef(null)
 
-  useEffect(() => { getSamples().then(setSamples).catch(() => {}) }, [])
-
   const toast = useCallback((message) => {
     const id = Math.random().toString(36).slice(2)
     setToasts((t) => [...t.slice(-2), { id, message }])
@@ -60,18 +52,6 @@ export default function App() {
 
   const reset = () => {
     setSid(null); setHints([]); setDiag(null); setCmp(null); setWorking(''); setPhase('idle')
-  }
-
-  async function pickTopic(topic) {
-    if (topic.sample) {                       // canned problem: instant
-      setProblem(topic.sample)
-      return
-    }
-    setPicking(`Writing a practice problem on ${topic.label}…`)
-    try {
-      const p = await getPractice(topic.slug)
-      setProblem(p.problem)
-    } catch (e) { toast(e.message) } finally { setPicking('') }
   }
 
   async function start() {
@@ -122,9 +102,7 @@ export default function App() {
         <div className="workspace">
           <div className="col-left">
             <div className="slot slot-problem">
-              <ProblemPanel samples={samples} problem={problem} setProblem={setProblem}
-                onStart={start} busy={busy === 'start'}
-                topicSlot={<TopicSearch picking={picking} onPick={pickTopic} />} />
+              <ProblemPanel problem={problem} setProblem={setProblem} onStart={start} busy={busy === 'start'} />
             </div>
             <div className="slot slot-pipe"><Pipeline phase={phase} /></div>
             {sid && (
@@ -145,7 +123,7 @@ export default function App() {
                     <h3>{busy === 'start' ? 'Preparing your hints…' : 'Your hint ladder will appear here'}</h3>
                     <p>{busy === 'start'
                       ? 'The first run can take 20–30 seconds on the free model pool.'
-                      : 'Pick a sample or paste a problem, then press Start tutoring.'}</p>
+                      : 'Type or paste a problem, then press Start tutoring.'}</p>
                   </motion.div>
                 ) : (
                   <motion.div key="session" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
