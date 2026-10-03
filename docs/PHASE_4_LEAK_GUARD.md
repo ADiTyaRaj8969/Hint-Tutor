@@ -254,15 +254,26 @@ assert leaks("Check your answer is 60.0", sol).leaked is True    # tolerance
 assert leaks("The train travelled 120 km.", sol).leaked is False # no false fire
 ```
 
----
+### Verification Suite (`tests/test_guard.py`)
+The entire deterministic scan layer is decoupled from any network or LLM dependency and tested offline:
+```bash
+python -m tests.test_guard
+```
+This tests:
+- Exact alias matching and case-insensitivity
+- Multi-word numbers ("sixty", "sixty-five") and comma-grouped digits (`1,200`)
+- Equation RHS regex scanning (`= 60`)
+- Floating-point tolerances ($\pm 10^{-6}$)
+- Idempotent masking via `[hidden — try the next hint]`
+- Level 3 exemption validation
 
 ## Exit Criteria
 
-- [ ] All six unit tests pass
-- [ ] A deliberately leaking hint is caught, regenerated, and comes back clean
-- [ ] Redaction verified by forcing two consecutive leaks
-- [ ] Verdict surfaced for the UI badge (FR-4.6) and the Phase 8 metric (FR-4.7)
-- [ ] Logged in [PROMPT_HISTORY.md](PROMPT_HISTORY.md) at 12:05
+- [x] All unit tests pass in `tests/test_guard.py`
+- [x] A deliberately leaking hint is caught, regenerated, and comes back clean
+- [x] Redaction verified by forcing two consecutive leaks
+- [x] Verdict surfaced for the UI badge (FR-4.6) and the Phase 8 metric (FR-4.7)
+- [x] Logged in [PROMPT_HISTORY.md](PROMPT_HISTORY.md) at 12:05
 
 ---
 
