@@ -27,7 +27,7 @@ def complete(prompt: str, *, system: str = "", json_mode: bool = False,
     extra = {"response_format": {"type": "json_object"}} if json_mode else {}
     try:
         r = _client().chat.completions.create(
-            model=os.getenv("LLM_MODEL", "grok-4"),
+            model=os.getenv("LLM_MODEL", "grok-4.7"),
             messages=messages,
             temperature=temperature,
             max_tokens=max_tokens,
