@@ -142,6 +142,16 @@ upstream provider rate-limits in bursts.
 
 ---
 
+### 13:40 — DIAGNOSE_PROMPT v1 (verified live, no prompt edits)
+
+**Change:** None. Ran the Phase 6 tests live on the train problem (4 diagnoses).
+**Technique:** decomposition + comparative reasoning (`what_they_did` before the critique).
+**Why:** Phase 6 exit criteria: first wrong step only, no double-penalising propagated errors, valid alternative methods accepted, targeted (not generic) hints.
+**Effect:** Propagated error (`x` instead of `/`, then 120 x 2 = 240) -> step 1 only; valid alternative ("half of 120 in 1 hour") -> `correct`, no hint; formula only -> `incomplete` with a next-step hint; `120 + 2` on line 2 -> step 2 (not 1, not 3). Hints named the student's actual action ("You multiplied the distance by the time...", "you added 120 and 2 instead") and none leaked. ~2-3 s per call.
+**Author:** Ansh
+
+---
+
 ## Prompt Inventory
 
 Every member must be able to explain every row.
