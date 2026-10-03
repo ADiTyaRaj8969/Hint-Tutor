@@ -140,8 +140,6 @@ export default function App() {
             <Compare cmp={cmp} onRun={compare} busy={busy === 'cmp'} />
           </div>
         )}
-
-        <footer className="foot">Prompt Engineering for Generative AI · Marwadi University · Team 5</footer>
       </div>
       <Toasts items={toasts} dismiss={dismiss} />
     </>
