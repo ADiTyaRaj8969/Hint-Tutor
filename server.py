@@ -19,8 +19,8 @@ import os
 
 from tutor.llm import LLMError
 from tutor.solver import solve, Solution
-from tutor.hints import generate_ladder, generate_v1, Ladder
-from tutor.guard import safe_hint
+from tutor.hints import generate_ladder, generate_v1, parse_v1, Ladder
+from tutor.guard import safe_hint, leaks
 from tutor.diagnose import diagnose
 from tutor.llm import complete_json
 from tutor.prompts import (
@@ -268,7 +268,14 @@ def compare(sid: str):
             s.cache[lvl] = {"level": lvl, "hint": text, "guarded": lvl < 3,
                             "leak_detected": verdict.leaked, "leak_where": verdict.where}
         v2.append(s.cache[lvl])
-    return {"v1_raw": s.v1, "v2": v2}
+    # V1 has no guard of its own; run ours over its output so the panel reports what happened.
+    parts = parse_v1(s.v1)
+    v1_leaks = []
+    for lvl in (1, 2):
+        v = leaks(parts.get(lvl, ""), s.sol)
+        if v.leaked:
+            v1_leaks.append({"level": lvl, "where": v.where, "value": v.value})
+    return {"v1_raw": s.v1, "v1_leaks": v1_leaks, "v2": v2}
 
 
 # ── serve the built React app, when it exists ────────────────────────

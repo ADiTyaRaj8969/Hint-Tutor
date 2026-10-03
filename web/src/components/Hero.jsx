@@ -1,0 +1,52 @@
+import { motion } from 'framer-motion'
+import { Sparkles, GraduationCap } from 'lucide-react'
+import { CountUp } from './ui'
+
+const STATS = [
+  [3, 'hint levels'],
+  [3, 'leak-check rules'],
+  [7, 'guardrails'],
+  [5, 'prompting techniques'],
+]
+
+export function Nav() {
+  return (
+    <nav className="nav">
+      <div className="brand">
+        <span className="brand-mark"><GraduationCap size={20} color="#fff" /></span>
+        Hint Tutor
+      </div>
+      <div className="nav-tags">
+        <span className="chip">Team 5</span>
+        <span className="chip">Problem 13</span>
+        <span className="chip">Theme C · Reasoning</span>
+      </div>
+    </nav>
+  )
+}
+
+export function Hero() {
+  return (
+    <header className="hero">
+      <motion.span className="eyebrow" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+        <span className="dot"><Sparkles size={12} /></span>
+        Prompt Engineering for Generative AI
+      </motion.span>
+      <motion.h1 initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.1 }}>
+        Learn the <span className="grad">method</span>,<br />never get the answer handed over.
+      </motion.h1>
+      <motion.p initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.25 }}>
+        Three progressive hints, and a deterministic check in code that the final answer never
+        appears at levels 1 and 2.
+      </motion.p>
+      <div className="stats">
+        {STATS.map(([n, label], i) => (
+          <motion.div key={label} className="stat" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.4 + i * 0.08 }}>
+            <b><CountUp to={n} /></b>
+            <span>{label}</span>
+          </motion.div>
+        ))}
+      </div>
+    </header>
+  )
+}
