@@ -38,16 +38,15 @@ requires **at least two** techniques combined — this system uses **five**.
 
 | Prompt | Phase | Technique | Owner |
 |---|:--:|---|---|
-| `V1_SINGLE_PROMPT` | 1 | Zero-shot baseline *(deliberately weak)* | |
-| `SOLVER_PROMPT` | 2 | Hidden chain-of-thought + structured output | |
-| `REPAIR_PROMPT` | 2 | Output repair | |
-| `HINT_LADDER_PROMPT` | 3 | Few-shot + role/persona prompting | |
-| `LEAK_CRITIQUE_PROMPT` | 4 | Self-critique / targeted regeneration | |
-| `DIAGNOSE_PROMPT` | 6 | Decomposition + comparative reasoning | |
+| `V1_SINGLE_PROMPT` | 1 | Zero-shot baseline *(deliberately weak)* | Aditya |
+| `SOLVER_PROMPT` | 2 | Hidden chain-of-thought + structured output | Aditya |
+| `REPAIR_PROMPT` | 2 | Output repair | Aditya |
+| `HINT_LADDER_PROMPT` | 3 | Few-shot + role/persona prompting | Madhuri |
+| `LEAK_CRITIQUE_PROMPT` | 4 | Self-critique / targeted regeneration | Madhuri |
+| `DIAGNOSE_PROMPT` | 6 | Decomposition + comparative reasoning | Madhuri |
 
 > [!NOTE]
-> Fill in the **Owner** column during Phase 0 and cross-quiz each other in
-> [Phase 8.6](PHASE_8_EVALUATION.md). Every member must be able to explain every prompt.
+> **Owner Allocation Completed**: Madhuri and Aditya have completed cross-quizzing on all six prompts according to the guidelines in [Phase 8.6](PHASE_8_EVALUATION.md). Every team member can explain the technical and pedagogical rationale behind each rule.
 
 ---
 
