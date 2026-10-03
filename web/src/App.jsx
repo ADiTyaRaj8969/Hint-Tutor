@@ -122,35 +122,47 @@ export default function App() {
 
         <div className="workspace">
           <div className="col-left">
-            <ProblemPanel samples={samples} problem={problem} setProblem={setProblem}
-              onStart={start} busy={busy === 'start'}
-              topicSlot={<TopicSearch picking={picking} onPick={pickTopic} />} />
-            <Pipeline phase={phase} />
+            <div className="slot slot-problem">
+              <ProblemPanel samples={samples} problem={problem} setProblem={setProblem}
+                onStart={start} busy={busy === 'start'}
+                topicSlot={<TopicSearch picking={picking} onPick={pickTopic} />} />
+            </div>
+            <div className="slot slot-pipe"><Pipeline phase={phase} /></div>
+            {sid && (
+              <div className="slot slot-working">
+                <Working working={working} setWorking={setWorking} onCheck={check} diag={diag} busy={busy === 'check'} />
+              </div>
+            )}
           </div>
 
           <div className="col-right">
-            <AnimatePresence mode="popLayout">
-              {!sid ? (
-                <motion.div key="empty" className="card empty" exit={{ opacity: 0, y: -16 }}
-                  initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5, duration: 0.6 }}>
-                  <div className="orb"><Sparkles size={34} /></div>
-                  <h3>{busy === 'start' ? 'Preparing your hints…' : 'Your hint ladder will appear here'}</h3>
-                  <p>{busy === 'start'
-                    ? 'The first run can take 20–30 seconds on the free model pool.'
-                    : 'Pick a sample or paste a problem, then press Start tutoring.'}</p>
-                </motion.div>
-              ) : (
-                <motion.div key="session" style={{ display: 'grid', gap: 22 }}
-                  initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                  <Ladder hints={hints} onNext={nextHint} busy={busy === 'hint'} />
-                  <Working working={working} setWorking={setWorking} onCheck={check} diag={diag} busy={busy === 'check'} />
-                  <Ask onAsk={ask} />
-                  <Compare cmp={cmp} onRun={compare} busy={busy === 'cmp'} />
-                </motion.div>
-              )}
-            </AnimatePresence>
+            <div className="slot slot-ladder">
+              <AnimatePresence mode="popLayout">
+                {!sid ? (
+                  <motion.div key="empty" className="card empty" exit={{ opacity: 0, y: -16 }}
+                    initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5, duration: 0.6 }}>
+                    <div className="orb"><Sparkles size={34} /></div>
+                    <h3>{busy === 'start' ? 'Preparing your hints…' : 'Your hint ladder will appear here'}</h3>
+                    <p>{busy === 'start'
+                      ? 'The first run can take 20–30 seconds on the free model pool.'
+                      : 'Pick a sample or paste a problem, then press Start tutoring.'}</p>
+                  </motion.div>
+                ) : (
+                  <motion.div key="session" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                    <Ladder hints={hints} onNext={nextHint} busy={busy === 'hint'} />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+            {sid && <div className="slot slot-ask"><Ask onAsk={ask} /></div>}
           </div>
         </div>
+
+        {sid && (
+          <div className="slot slot-compare full">
+            <Compare cmp={cmp} onRun={compare} busy={busy === 'cmp'} />
+          </div>
+        )}
 
         <footer className="foot">Prompt Engineering for Generative AI · Marwadi University · Team 5</footer>
       </div>
