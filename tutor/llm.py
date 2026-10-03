@@ -1,4 +1,4 @@
-import os, json
+import os, json, time
 
 try:                                 # convenience only — env vars may be set directly
     from dotenv import load_dotenv
@@ -19,6 +19,24 @@ def _client():
         raise LLMError("OPENROUTER_API_KEY missing. Copy .env.example to .env and add your key.")
     return OpenAI(api_key=key, base_url=os.getenv("OPENROUTER_BASE_URL", OPENROUTER_BASE_URL))
 
+def _create(messages, temperature, max_tokens, extra):
+    """One chat call, retried on rate limits (free shared pools return 429 in bursts)."""
+    from openai import RateLimitError
+    for attempt in range(3):
+        try:
+            return _client().chat.completions.create(
+                model=os.getenv("LLM_MODEL", "inclusionai/ling-3.1-flash"),
+                messages=messages,
+                temperature=temperature,
+                max_tokens=max_tokens,
+                **extra,
+            )
+        except RateLimitError:
+            if attempt == 2:
+                raise
+            time.sleep(2 * (attempt + 1))      # 2s, then 4s
+
+
 def complete(prompt: str, *, system: str = "", json_mode: bool = False,
              temperature: float = 0.2, max_tokens: int = 1200) -> str:
     """Send one prompt, return raw text. The only place a vendor SDK appears."""
@@ -33,13 +51,7 @@ def complete(prompt: str, *, system: str = "", json_mode: bool = False,
     # reply empty, so thinking is switched off. Step-by-step work lives in the prompts.
     extra = {"extra_body": {"reasoning": {"enabled": False}}}
     try:
-        r = _client().chat.completions.create(
-            model=os.getenv("LLM_MODEL", "inclusionai/ling-3.1-flash"),
-            messages=messages,
-            temperature=temperature,
-            max_tokens=max_tokens,
-            **extra,
-        )
+        r = _create(messages, temperature, max_tokens, extra)
         choice = r.choices[0]
         text = choice.message.content or ""
         if not text.strip() or choice.finish_reason == "length":
