@@ -48,6 +48,16 @@ parallel without re-negotiating interfaces.
 
 ---
 
+### 12:33 — V1_SINGLE_PROMPT v1 (baseline run)
+
+**Change:** No edit — V1 is frozen. Ran it on the 3 doc problems plus the 8 single-answer case-set problems (model: `inclusionai/ling-3.1-flash`, temperature 0.2) and scored L1/L2 with `guard.leaks()`.
+**Technique:** zero-shot baseline.
+**Why:** Phase 1 requires an honest baseline and a concrete record of where it fails.
+**Effect:** **0 leaks at L1 or L2 on all 11 runs.** V1 held the "do not reveal the answer" instruction on this model. Its weaknesses show elsewhere: L3 states the full substitution (e.g. `3x + 10 = 2(x + 10)`, `15% of 800 = (15/100) x 800`), L1/L2 sometimes already name the formula so the levels blur, and nothing in V1 would catch a leak if one occurred. Reported as measured, not tuned. The V1-vs-V2 claim therefore rests on the guarantee (V1 might leak, V2 cannot) and on the Phase 8 twelve-case rate, not on a cherry-picked failure.
+**Author:** Ansh
+
+---
+
 <!--
 Add entries below this line as you work. Suggested checkpoints — delete the ones you do not hit
 and add the ones you do:
