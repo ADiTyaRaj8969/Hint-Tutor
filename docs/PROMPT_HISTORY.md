@@ -169,6 +169,14 @@ upstream provider rate-limits in bursts.
 
 ---
 
+### 14:25 — V1 re-run complete; demo script written (no prompt edits)
+
+**Change:** Re-ran `eval.run_eval --version v1` in full after retry/backoff landed in `llm.py`. Updated `docs/EVALUATION.md` and added `docs/DEMO_SCRIPT.md`.
+**Why:** The first V1 run lost two cases to rate limits, so V1 and V2 were not scored over the same set.
+**Effect:** V1: 12/12 measured, 0 errored; leak rate 0/12, wrong-step 4/4. Both versions now cover the identical case set; both metrics are 100% / 0%, so the evidence that separates them is structural (guarantee + off-topic guardrail), as the demo script states.
+
+---
+
 ## Prompt Inventory
 
 Every member must be able to explain every row.

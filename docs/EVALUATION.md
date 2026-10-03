@@ -28,9 +28,9 @@ python -m eval.run_eval --compare
 
 | Metric | V1 (single prompt) | V2 (decomposed + guard) |
 |---|:--:|:--:|
-| **Answer Leak Rate @ L1–L2** | **0%** (0 / 10 measured) | **0%** (0 / 12 measured) |
-| **Wrong-Step Localisation** | **100%** (3 / 3 measured) | **100%** (4 / 4 measured) |
-| Cases lost to rate limiting | 2 | 0 |
+| **Answer Leak Rate @ L1–L2** | **0%** (0 / 12 measured) | **0%** (0 / 12 measured) |
+| **Wrong-Step Localisation** | **100%** (4 / 4 measured) | **100%** (4 / 4 measured) |
+| Cases lost to rate limiting | 0 | 0 |
 
 > [!IMPORTANT]
 > **Neither metric separates the two versions on this case set.** V1 did not leak, and it located
@@ -112,7 +112,7 @@ Both versions located every wrong step they processed, including case 10, where 
 | 9 | inverted the fraction | 1 | 1 | 1 |
 | 10 | didn't subtract 1 before halving | 3 | 3 | 3 |
 | 11 | multiplied instead of dividing | 1 | 1 | 1 |
-| 12 | added times instead of rates | 1 | *rate-limited* | 1 |
+| 12 | added times instead of rates | 1 | 1 | 1 |
 
 The difference is in the **hint**, which the index alone does not capture. V2 is required to name
 the student's actual action:
@@ -151,10 +151,10 @@ The leak result is unchanged from the main set: V1 happens not to leak on this m
 
 ## Methodology Notes
 
-**Errored cases are excluded, not counted as passes.** Two V1 cases hit OpenRouter rate limits.
-Dividing by the full 12 would have scored an unmeasured case as a clean one, so the denominator is
-the cases that completed. V1's step accuracy is 3/3, not 3/4 — the fourth case errored, it was not
-answered wrongly.
+**Errored cases are excluded, not counted as passes.** The first V1 run lost two cases to OpenRouter
+rate limits; dividing by the full 12 would have scored an unmeasured case as a clean one, so the
+harness divides by the cases that completed. After retry-with-backoff was added to `llm.py`, V1 was
+re-run in full: 12 / 12 measured, 0 errored, so both versions now cover the identical case set.
 
 **Leak detection uses the hand-written answer** from `cases.json`, not the solver's output, so the
 metric does not depend on the component being measured.
@@ -174,8 +174,8 @@ in the first place on this set, so the guard never had to fire during evaluation
    reliability is a property of that model, and the result may not transfer.
 3. **Small n.** Twelve cases, four with seeded errors. A single flip moves the secondary metric by
    25 points.
-4. **Rate limiting cost us two V1 measurements**, so the two versions were not scored over an
-   identical set of completed cases.
+4. **The cases are easy.** Both versions score 100% on wrong-step localisation, so that metric also
+   does not separate them; the difference is in hint quality, which the index cannot capture.
 
 ---
 
