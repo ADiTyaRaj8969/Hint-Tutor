@@ -4,6 +4,7 @@
  * superscripts, so x² arrives as "x" and "2" on separate lines. The HTML copy
  * still holds each formula in machine-readable form (TeX inside KaTeX, MathML
  * elsewhere), so the problem is rebuilt from that whenever it is there.
+ * PDFs and Word files only give plain text, which is repaired as far as is safe.
  */
 
 // Formula wrappers whose visible glyphs would otherwise paste a second, flattened copy.
@@ -18,10 +19,10 @@ export function cleanPaste(data) {
   const html = data.getData('text/html')
   if (/<math[\s>]/i.test(html)) {
     const text = fromHtml(html)
-    if (text) return text
+    if (text) return plainLetters(text)
   }
-  const raw = data.getData('text/plain')
-  const fixed = joinFragments(raw)
+  const raw = data.getData('text/plain').replace(/\r\n?/g, '\n')
+  const fixed = repairPlain(raw)
   return fixed === raw ? null : fixed
 }
 
@@ -64,14 +65,24 @@ function linear(n) {
     case 'msubsup': case 'munderover': return `${unit(0)}_${unit(1)}^${unit(2)}`
     case 'mover': return n.getAttribute('accent') === 'true' ? at(0) + at(1) : `${unit(0)}^${unit(1)}`
     case 'mfrac': return `${unit(0)}/${unit(1)}`
-    case 'msqrt': return `√(${k.map(linear).join('')})`
+    case 'msqrt': return `√(${row(k)})`
     case 'mroot': return `${unit(0)}^(1/${at(1)})`
     case 'mtable': return matrix(n)
     case 'mrow':                                   // [table] is a matrix, |table| its determinant
       if (k.length === 3 && k[1].localName === 'mtable') return (/^[|∣]$/.test(at(0)) ? 'det ' : '') + matrix(k[1])
-      return k.map(linear).join('')
-    default: return k.map(linear).join('')
+      return row(k)
+    default: return row(k)
   }
+}
+
+const SCRIPTED = new Set(['msup', 'msub', 'msubsup', 'munder', 'mover', 'munderover'])
+
+/** Siblings side by side, with a space after a script so log_2 8 does not read log_28. */
+function row(kids) {
+  return kids.map((c, i) => {
+    const s = linear(c)
+    return i && SCRIPTED.has(kids[i - 1].localName) && /^[\p{L}\p{N}(√]/u.test(s) ? ` ${s}` : s
+  }).join('')
 }
 
 function matrix(table) {
@@ -118,12 +129,29 @@ const tidy = (s) => s
   .replace(/\n{3,}/g, '\n\n')
   .trim()
 
+/** Plain-text repair, in the order the damage has to be undone. */
+export function repairPlain(text) {
+  return powers(stackedLimits(joinFragments(plainLetters(text))))
+}
+
+// 𝑥 and the rest of the maths-font alphabet (what PDFs and Word give) back to ordinary letters.
+const plainLetters = (s) => s.replace(/[\u{1D400}-\u{1D7FF}ℎ]/gu, (c) => c.normalize('NFKC'))
+
+// Function names and differentials are the only words allowed inside a formula.
+const FUNCS = /cosec|arcsin|arccos|arctan|sinh|cosh|tanh|lim|sin|cos|tan|cot|sec|csc|log|ln|exp|det|max|min|\bd[a-z]\b/g
+const mathy = (s) => /[\p{L}\d]/u.test(s) && !/\p{L}{2,}/u.test(s.replace(FUNCS, ' '))
+
+/** Put a rebuilt formula back into the sentence it was cut out of. */
+function splice(out, formula, next) {
+  const before = out.length && out[out.length - 1].trim() ? `${out.pop().trimEnd()} ` : ''
+  out.push(`${before}${formula}${next ? ` ${next}` : ''}`)
+}
+
 /**
- * Plain-text fallback: glue a one-symbol-per-line run back into a formula, and
- * the formula back into the sentence it was cut out of. A run is four or more
+ * Glue a one-symbol-per-line run back into a formula. A run is four or more
  * short lines, at least half of them a single character, so a list survives.
  */
-export function joinFragments(text) {
+function joinFragments(text) {
   const lines = text.split(/\r?\n/)
   const out = []
   let i = 0
@@ -139,12 +167,62 @@ export function joinFragments(text) {
     }
     const math = glue(run)
     const next = (lines[j] ?? '').trim()
-    const rest = next ? dropEcho(next, math) : ''
-    const before = out.length && out[out.length - 1].trim() ? `${out.pop().trimEnd()} ` : ''
-    out.push(`${before}${math}${rest ? ` ${rest}` : ''}`)
+    splice(out, math, next ? dropEcho(next, math) : '')
     i = next ? j + 1 : j
   }
   return out.join('\n')
+}
+
+const SUB = /^[a-z]\s*(?:→|->|⟶)\s*\S+$/
+
+/**
+ * A PDF sets a limit as rows: "lim", then "x→a" under it, then the expression,
+ * where a fraction is a numerator row over a denominator row.
+ */
+function stackedLimits(text) {
+  const lines = text.split(/\r?\n/)
+  const out = []
+  for (let i = 0; i < lines.length; i++) {
+    const m = /^(.*?)\blim\s*(.*)$/i.exec(lines[i].trim())
+    const under = m?.[2] || (lines[i + 1] ?? '').trim()
+    if (!m || !SUB.test(under)) {
+      out.push(lines[i])
+      continue
+    }
+    let j = m[2] ? i + 1 : i + 2
+    if (!(lines[j] ?? '').trim() && mathy(lines[j + 1] ?? '')) j++   // a gap row before the expression
+    const top = (lines[j] ?? '').trim()
+    const bottom = (lines[j + 1] ?? '').trim()
+    const fraction = mathy(top) && mathy(bottom) && !/=/.test(top + bottom)
+    const expr = fraction ? `${group(top)}/${group(bottom)}` : mathy(top) ? top : ''
+    j += fraction ? 2 : expr ? 1 : 0
+    const next = (lines[j] ?? '').trim()
+    splice(out, `${m[1]}lim_(${under})${expr ? ` ${expr}` : ''}`, next)
+    i = next ? j : j - 1
+  }
+  return out.join('\n')
+}
+
+const VAR_DIGIT = /(?<!\p{L})([a-z])(\d)(?![\d.])/gu
+const BARE_VAR = /(?<!\p{L})([a-z])(?![\p{L}\d])/gu
+const isFormula = (chunk) => mathy(chunk) && /[\d+\-−=^/()→×÷*√<>≤≥]/.test(chunk)
+
+/**
+ * The copy also lowers raised digits, so x² arrives as x2. The ^ goes back only
+ * where that reading is safe: the letter also appears on its own (x2 + 2x) and
+ * always with the same digit. x1 and x2 together are subscripts and stay.
+ */
+function powers(text) {
+  const digits = {}
+  const alone = new Set()
+  for (const f of text.split(/\s+/).filter(isFormula)) {
+    for (const [, v, d] of f.matchAll(VAR_DIGIT)) (digits[v] ??= new Set()).add(d)
+    for (const [, v] of f.matchAll(BARE_VAR)) alone.add(v)
+  }
+  const sure = (v) => digits[v]?.size === 1 && alone.has(v)
+  return text.split(/(\s+)/).map((chunk) => (!isFormula(chunk) ? chunk : chunk
+    .replace(VAR_DIGIT, (m, v, d) => (sure(v) ? `${v}^${d}` : m))
+    .replace(/(\([^()]*\p{L}[^()]*\))(\d)(?![\d.])/gu, '$1^$2'))).join('')   // (x+1)2 -> (x+1)^2
 }
 
 /** No spaces inside a formula, except where two numbers or a word and a letter would fuse. */
