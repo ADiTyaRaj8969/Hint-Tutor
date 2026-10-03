@@ -300,3 +300,42 @@ kbd {
 /* ───────────── small fixes ───────────── */
 .eyebrow svg, .eyebrow .dot { color: var(--ink); }
 .guard-head svg, .result-head svg, .verdict svg, .ask-reply svg, .toast svg { flex: none; }
+
+/* ───────────── maths: formula cards + constant chips ───────────── */
+.ftile {
+  display: flex; flex-direction: column; justify-content: space-between; gap: 10px; min-height: 148px;
+  border: var(--line); background: var(--bg); box-shadow: var(--shadow-sm); padding: 14px;
+  transition: transform 0.2s var(--ease), box-shadow 0.2s var(--ease), background 0.2s;
+}
+.ftile:hover { transform: translate(-3px, -3px) rotate(-0.6deg); box-shadow: 6px 6px 0 var(--ink); background: var(--accent); }
+.ftile-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.ftile-glyph {
+  display: grid; place-items: center; width: 38px; height: 38px; flex: none;
+  border: var(--line); background: var(--accent-2); color: #fff; box-shadow: 2px 2px 0 var(--ink);
+  font-family: var(--mono); font-size: 21px; font-weight: 700; transition: transform 0.3s var(--ease);
+}
+.ftile:nth-child(2) .ftile-glyph { background: var(--green); }
+.ftile:nth-child(3) .ftile-glyph { background: var(--pink); color: var(--ink); }
+.ftile:nth-child(4) .ftile-glyph { background: var(--amber); color: var(--ink); }
+.ftile:hover .ftile-glyph { transform: rotate(-10deg) scale(1.08); }
+.ftile-topic { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-faint); }
+.ftile:hover .ftile-topic { color: var(--ink); }
+.ftile-body { min-height: 3.3em; display: flex; align-items: center; overflow: hidden; }
+.ftile-body code { font-family: var(--mono); font-size: 15.5px; font-weight: 500; line-height: 1.35; color: var(--ink); word-break: break-word; }
+.ftile-dots { display: flex; gap: 5px; }
+.ftile-dots i { width: 16px; height: 5px; border: 1.5px solid var(--ink); background: var(--card); transition: background 0.3s, width 0.3s var(--ease); }
+.ftile-dots i.on { width: 28px; background: var(--ink); }
+
+.mchip { display: inline-flex; align-items: center; gap: 7px; cursor: default; overflow: hidden; }
+.mchip b { font-family: var(--mono); font-size: 14px; line-height: 1; }
+.mchip i { font-family: var(--mono); font-style: normal; font-size: 11px; font-weight: 700; letter-spacing: 0.02em; text-transform: none; }
+.mchip em {
+  font-family: var(--mono); font-style: normal; font-size: 11px; font-weight: 700; white-space: nowrap;
+  max-width: 0; opacity: 0; transition: max-width 0.5s var(--ease), opacity 0.3s;
+}
+.mchip:hover em, .mchip:focus-visible em { max-width: 90px; opacity: 1; }
+.mchip:hover { background: var(--accent-2); color: #fff; }
+.mchip { transition: background 0.2s, color 0.2s; }
+
+.mchip, .mchip b, .mchip i, .mchip em { text-transform: none; }
+.mchip b { font-size: 15px; }
