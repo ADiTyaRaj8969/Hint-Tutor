@@ -26,7 +26,9 @@ def complete(prompt: str, *, system: str = "", json_mode: bool = False,
 
     # ling-3.1-flash rejects response_format (no structured-outputs support), so JSON
     # is requested in the prompt and parsed tolerantly by complete_json().
-    extra = {}
+    # It is also a reasoning model: thinking tokens eat into max_tokens and can leave the
+    # reply empty, so thinking is switched off. Step-by-step work lives in the prompts.
+    extra = {"extra_body": {"reasoning": {"enabled": False}}}
     try:
         r = _client().chat.completions.create(
             model=os.getenv("LLM_MODEL", "inclusionai/ling-3.1-flash"),
@@ -35,7 +37,11 @@ def complete(prompt: str, *, system: str = "", json_mode: bool = False,
             max_tokens=max_tokens,
             **extra,
         )
-        return r.choices[0].message.content or ""
+        choice = r.choices[0]
+        text = choice.message.content or ""
+        if not text.strip() or choice.finish_reason == "length":
+            raise LLMError("The model returned an empty or truncated reply. Try again.")
+        return text
     except LLMError:
         raise                                    # already friendly, don't re-wrap
     except Exception as e:
