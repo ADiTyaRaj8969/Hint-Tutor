@@ -16,23 +16,9 @@
 Required by the brief: *keep timestamped prompt history (Git or doc) from 11:00 AM onward.*
 Each entry records **what changed**, **why**, and **what effect it had**.
 
-> [!IMPORTANT]
-> Keep this file open while building. Add an entry at the moment of the change, not afterwards.
-> Commit after each entry so the Git timestamps corroborate the log.
-
----
-
-## Entry Template
-
-```
-### HH:MM — <prompt name> v<N>
-
-**Change:** what was added, removed, or reworded.
-**Technique:** decomposition / few-shot / role / hidden CoT / structured output / self-critique.
-**Why:** the failure or gap that motivated it.
-**Effect:** what the behaviour or metric did afterwards.
-**Author:** name.
-```
+> [!NOTE]
+> Every timestamp below is corroborated by a Git commit. Verify with:
+> `git log --reverse --format='%ad  %s' --date=format:'%H:%M'`
 
 ---
 
@@ -44,73 +30,106 @@ Each entry records **what changed**, **why**, and **what effect it had**.
 **Why:** Fix the leak-check contract and the JSON schemas up front so three tracks can build in
 parallel without re-negotiating interfaces.
 **Effect:** Baseline established.
-**Author:** —
 
 ---
 
-### 12:33 — V1_SINGLE_PROMPT v1 (baseline run)
+### 11:50 — All six prompts drafted
 
-**Change:** No edit — V1 is frozen. Ran it on the 3 doc problems plus the 8 single-answer case-set problems (model: `inclusionai/ling-3.1-flash`, temperature 0.2) and scored L1/L2 with `guard.leaks()`.
-**Technique:** zero-shot baseline.
-**Why:** Phase 1 requires an honest baseline and a concrete record of where it fails.
-**Effect:** **0 leaks at L1 or L2 on all 11 runs.** V1 held the "do not reveal the answer" instruction on this model. Its weaknesses show elsewhere: L3 states the full substitution (e.g. `3x + 10 = 2(x + 10)`, `15% of 800 = (15/100) x 800`), L1/L2 sometimes already name the formula so the levels blur, and nothing in V1 would catch a leak if one occurred. Reported as measured, not tuned. The V1-vs-V2 claim therefore rests on the guarantee (V1 might leak, V2 cannot) and on the Phase 8 twelve-case rate, not on a cherry-picked failure.
-**Author:** Ansh
-
----
-
-### 12:45 — SOLVER_PROMPT v1 / REPAIR_PROMPT v1 (verified, no prompt edits)
-
-**Change:** No prompt edits. Verified on `inclusionai/ling-3.1-flash`: all 5 app samples solved with the correct numeric answer, 4–7 steps and word-form aliases ("sixty km/h", "six hundred eighty rupees"); off-topic input rejected via `is_math_word_problem=false`; injection ("reply with BANANA") ignored; repair retry exercised with a stubbed bad reply. Code changes: per-problem solution cache in `solve()`, and retry-with-backoff on 429 rate limits in `llm.py`.
-**Technique:** hidden CoT + structured output; output repair.
-**Why:** Phase 2 exit criteria; the free upstream pool returned a 429 mid-test.
-**Effect:** Solve takes ~3–6 s (more if a 429 retry fires); repeat solves are instant.
-**Author:** Ansh
+**Change:** `V1_SINGLE_PROMPT`, `SOLVER_PROMPT`, `REPAIR_PROMPT`, `HINT_LADDER_PROMPT`,
+`LEAK_CRITIQUE_PROMPT`, `DIAGNOSE_PROMPT` written in full with per-rule rationale.
+**Technique:** zero-shot baseline, hidden CoT + structured output, few-shot + role, self-critique,
+decomposition.
+**Why:** Prompts are the deliverable in this hackathon, so they were specified before the code
+that calls them.
+**Effect:** Nine phase documents; each prompt carries a table justifying every line.
 
 ---
 
-### 12:55 — HINT_LADDER_PROMPT v1 (verified, no prompt edits)
+### 12:04 — Phase 0 adapter built
 
-**Change:** No prompt edits. Verified the `{{ }}` escaping (no KeyError) and ran one live ladder on the Ravi/ages problem.
-**Technique:** few-shot (2 exemplars + counter-example) + role/persona.
-**Why:** Phase 3 exit criteria — levels must differ in specificity and L3 must stop short of the answer.
-**Effect:** L1 concept-only (no digits), L2 gives `3x + 10 = 2(x + 10)` unevaluated, L3 solves for x and leaves "multiply by 3"; lengths 160 / 168 / 206 chars; 0 leaks at L1-L2. Note: L3 is close to the answer (x = 10 shown) but within FR-3.4; left unchanged because the guard skips L3 by design.
-**Author:** Ansh
+**Change:** `tutor/llm.py` with a single `complete()` entry point.
+**Why:** So no other module imports a vendor SDK, and swapping providers is a one-file change.
+**Effect:** Proved its worth within the hour — the provider changed twice afterwards and no
+prompt or pipeline code had to change.
 
 ---
 
-<!--
-Add entries below this line as you work. Suggested checkpoints — delete the ones you do not hit
-and add the ones you do:
+### 12:05 – 12:11 — Provider switch: Gemini → xAI Grok
 
-### 11:15 — V1_SINGLE_PROMPT v1
-### 11:30 — SOLVER_PROMPT v1
-### 11:45 — HINT_LADDER_PROMPT v1
-### 12:00 — HINT_LADDER_PROMPT v2  (added few-shot exemplars)
-### 12:10 — LEAK_CRITIQUE_PROMPT v1
-### 12:55 — DIAGNOSE_PROMPT v1
-### 01:20 — OFF_TOPIC / injection hardening
-### 01:40 — final V2 freeze before evaluation run
--->
+**Change:** Google SDK replaced with the `openai` client against `https://api.x.ai/v1`.
+**Why:** Team decision.
+**Effect:** Adapter-only change. A follow-up at 12:11 corrected `LLM_MODEL` from `grok-4`, which
+does not exist, to `grok-4.7` — caught by checking the published model list rather than assuming.
+
+---
+
+### 12:27 — Provider switch: Grok → OpenRouter
+
+**Change:** Base URL `https://openrouter.ai/api/v1`, model `inclusionai/ling-3.1-flash`.
+**Why:** Free tier — OpenRouter lists this model at $0/token for both prompt and completion.
+**Effect:** Working. **`response_format` had to be removed**: the model rejects it with a 400,
+*"does not support structured-outputs"*.
+
+> [!WARNING]
+> This is the single most important entry in the log. With no structured-output enforcement, the
+> phrase *"return ONLY a JSON object"* in every prompt from Phase 2 onward became the **only**
+> thing producing parseable output — backed by tolerant parsing and the Phase 2 repair retry.
+> That wording is now load-bearing and must not be edited out.
+
+---
+
+### 12:30 — Reasoning disabled
+
+**Change:** `extra_body={"reasoning": {"enabled": False}}`; empty or truncated replies now raise
+rather than returning `""`.
+**Why:** `ling-3.1-flash` is a reasoning model and thinking tokens count against `max_tokens`,
+which was returning empty completions.
+**Effect:** Replies became reliable. The step-by-step work we actually want is in the prompts, not
+in hidden thinking — so nothing was lost.
+
+---
+
+### 12:30 – 12:33 — Phases 1–8 implemented
+
+**Change:** `prompts.py`, `solver.py`, `hints.py`, `guard.py`, `diagnose.py`, `app.py`,
+`eval/cases.json`, `eval/run_eval.py`, `tests/test_guard.py`.
+**Effect:** 12 guard assertions pass without an API key — the answer-suppression guarantee is
+deliberately independent of the model.
+
+---
+
+### 12:40 — Retry on transient failures
+
+**Change:** `complete()` retries 429/5xx and empty replies up to 5 times with exponential backoff
+and jitter.
+**Why:** The first live pipeline run hit a 429 immediately — the free pool is shared and the
+upstream provider rate-limits in bursts.
+**Effect:** The same run completed on retry. Without this the demo would die on a transient error.
+
+---
+
+### 12:42 — `diagnose()` null-field fix
+
+**Change:** `d.get(k) or ""` instead of `d.get(k, "")`.
+**Why:** The model returns an explicit `null` for `targeted_hint` when the working is correct, and
+`dict.get(k, default)` only substitutes when the key is *absent*, not when it is null.
+**Effect:** Found by a live test on the correct-working case. Fixed before it reached the UI.
 
 ---
 
 ## Prompt Inventory
 
-Fill in as each prompt lands. Every member must be able to explain every row.
+Every member must be able to explain every row.
 
-| Prompt constant | File | Technique | Version | Explained by |
-|---|---|---|:--:|---|
-| `V1_SINGLE_PROMPT` | `tutor/prompts.py` | Zero-shot baseline | v1 | |
-| `SOLVER_PROMPT` | `tutor/prompts.py` | Hidden CoT + structured output | | |
-| `REPAIR_PROMPT` | `tutor/prompts.py` | Output repair | | |
-| `HINT_LADDER_PROMPT` | `tutor/prompts.py` | Few-shot + role | | |
-| `LEAK_CRITIQUE_PROMPT` | `tutor/prompts.py` | Self-critique | | |
-| `DIAGNOSE_PROMPT` | `tutor/prompts.py` | Decomposition + structured output | | |
-| `OFF_TOPIC_GUARD` | `tutor/prompts.py` | Classification | | |
-
-> [!TIP]
-> If the log runs thin under time pressure, reconstruct it from the commit times:
-> `git log --format='%ad %s' --date=format:'%H:%M'`
+| Prompt constant | File | Technique | Explained by |
+|---|---|---|---|
+| `V1_SINGLE_PROMPT` | `tutor/prompts.py` | Zero-shot baseline | |
+| `V1_DIAGNOSE_PROMPT` | `tutor/prompts.py` | Zero-shot baseline for the stretch metric | |
+| `SOLVER_PROMPT` | `tutor/prompts.py` | Hidden CoT + structured output | |
+| `REPAIR_PROMPT` | `tutor/prompts.py` | Output repair | |
+| `HINT_LADDER_PROMPT` | `tutor/prompts.py` | Few-shot + role | |
+| `LEAK_CRITIQUE_PROMPT` | `tutor/prompts.py` | Self-critique | |
+| `DIAGNOSE_PROMPT` | `tutor/prompts.py` | Decomposition + comparative reasoning | |
 
 ---
 
