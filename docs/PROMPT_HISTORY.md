@@ -161,6 +161,14 @@ upstream provider rate-limits in bursts.
 
 ---
 
+### 14:10 — Adversarial comparison run (no prompt edits)
+
+**Change:** None. Ran `eval.run_adversarial` once and recorded the table in `docs/EVALUATION.md`.
+**Why:** The 12-case set did not separate V1 from V2.
+**Effect:** Injection, answer-request and answer-in-prompt: no leak from either version. Off-topic: V1 generated hints for a poem request; V2 declined. The leak claim stays "V1 might leak, V2 cannot"; the demonstrable V1 failure is the missing off-topic guardrail.
+
+---
+
 ## Prompt Inventory
 
 Every member must be able to explain every row.
