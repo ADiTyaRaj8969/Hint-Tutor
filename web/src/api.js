@@ -15,6 +15,12 @@ async function request(path, options = {}) {
 
 export const getSamples = () => request('/samples')
 
+export const searchTopics = (q = '') =>
+  request(`/topics?q=${encodeURIComponent(q)}`)
+
+export const getPractice = (topic) =>
+  request('/practice', { method: 'POST', body: JSON.stringify({ topic }) })
+
 export const startSession = (problem) =>
   request('/session', { method: 'POST', body: JSON.stringify({ problem }) })
 

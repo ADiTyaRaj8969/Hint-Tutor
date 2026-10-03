@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import {
-  getSamples, startSession, getHint, checkWorking, askTutor, getComparison,
+  getSamples, searchTopics, getPractice,
+  startSession, getHint, checkWorking, askTutor, getComparison,
 } from './api'
 import './App.css'
 
@@ -68,9 +69,66 @@ function Diagnosis({ result }) {
   )
 }
 
+function TopicSearch({ onPick, picking }) {
+  const [query, setQuery] = useState('')
+  const [topics, setTopics] = useState([])
+  const [open, setOpen] = useState(false)
+
+  // Debounced so typing does not fire a request per keystroke.
+  useEffect(() => {
+    const t = setTimeout(() => {
+      searchTopics(query).then(setTopics).catch(() => setTopics([]))
+    }, 180)
+    return () => clearTimeout(t)
+  }, [query])
+
+  return (
+    <div className="topic-search">
+      <label htmlFor="topic">Search topics</label>
+      <input
+        id="topic"
+        value={query}
+        onFocus={() => setOpen(true)}
+        onChange={(e) => { setQuery(e.target.value); setOpen(true) }}
+        placeholder="e.g. integrals, probability, trigonometry, matrices…"
+        autoComplete="off"
+      />
+      {open && topics.length > 0 && (
+        <>
+          <div className="topic-count">
+            {topics.length} topic{topics.length === 1 ? '' : 's'}
+            {query ? ` matching “${query}”` : ' available'}
+          </div>
+          <ul className="topic-list">
+            {topics.map((t) => (
+              <li key={t.slug}>
+                <button
+                  type="button"
+                  className="topic-chip"
+                  disabled={!!picking}
+                  onClick={() => { onPick(t); setOpen(false); setQuery(t.label) }}
+                >
+                  {t.label}
+                  {t.sample
+                    ? <span className="chip-tag ready">sample</span>
+                    : <span className="chip-tag gen">generate</span>}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
+      {open && query && topics.length === 0 && (
+        <div className="topic-count">No topic matches “{query}”.</div>
+      )}
+    </div>
+  )
+}
+
 export default function App() {
   const [samples, setSamples] = useState([])
   const [problem, setProblem] = useState('')
+  const [picking, setPicking] = useState('')
   const [sid, setSid] = useState(null)
   const [topic, setTopic] = useState(null)
   const [hints, setHints] = useState([])
@@ -87,6 +145,19 @@ export default function App() {
   const reset = () => {
     setSid(null); setHints([]); setDiag(null); setCmp(null)
     setWorking(''); setAskReply(null); setQuestion(''); setTopic(null)
+  }
+
+  async function pickTopic(topic) {
+    setError('')
+    if (topic.sample) {                       // canned problem — instant
+      setProblem(topic.sample)
+      return
+    }
+    setPicking(`Writing a practice problem on ${topic.label}…`)
+    try {
+      const p = await getPractice(topic.slug)
+      setProblem(p.problem)
+    } catch (e) { setError(e.message) } finally { setPicking('') }
   }
 
   async function start() {
@@ -134,7 +205,10 @@ export default function App() {
       </header>
 
       <section className="card">
-        <label htmlFor="sample">Sample problem</label>
+        <TopicSearch picking={picking} onPick={pickTopic} />
+        {picking && <div className="badge info">{picking}</div>}
+
+        <label htmlFor="sample">Or choose a sample problem</label>
         <select id="sample" defaultValue=""
           onChange={(e) => setProblem(e.target.value)}>
           <option value="">— type your own —</option>

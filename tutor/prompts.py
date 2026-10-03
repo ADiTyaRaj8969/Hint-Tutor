@@ -362,6 +362,24 @@ Return ONLY this JSON object:
 # PHASE 7 — GUARDRAILS.  Static text, no model call. A request to break
 # the core guarantee should not be routed through the thing being guarded.
 # ─────────────────────────────────────────────────────────────────────
+# ─────────────────────────────────────────────────────────────────────
+# PRACTICE PROBLEM.  Technique: constrained generation.
+# Used by the topic search: picking a topic with no canned sample asks
+# the model for one. The problem only — never the solution, which the
+# Phase 2 solver derives independently so the pipeline is unchanged.
+# ─────────────────────────────────────────────────────────────────────
+PRACTICE_PROMPT = """Write ONE short mathematics word problem on the topic: {topic}
+
+Rules:
+- School or pre-university level, solvable in 2 to 6 steps.
+- Exactly one well-defined answer.
+- Two or three sentences. Use plain text, no LaTeX, no markdown.
+- Use Indian context and rupees where money is involved.
+- Do NOT solve it, do not hint at the method, and do not state the answer.
+
+Return ONLY this JSON object: {{"problem": "..."}}"""
+
+
 ANSWER_REQUEST_REFUSAL = (
     "I'm not going to give you the answer — working it out yourself is the "
     "whole point. But I can make the next hint more specific. "

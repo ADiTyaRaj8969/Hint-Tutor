@@ -22,7 +22,11 @@ from tutor.solver import solve, Solution
 from tutor.hints import generate_ladder, generate_v1, Ladder
 from tutor.guard import safe_hint
 from tutor.diagnose import diagnose
-from tutor.prompts import is_answer_request, ANSWER_REQUEST_REFUSAL, OFF_TOPIC_REFUSAL
+from tutor.llm import complete_json
+from tutor.prompts import (
+    is_answer_request, ANSWER_REQUEST_REFUSAL, OFF_TOPIC_REFUSAL,
+    TOPICS, PRACTICE_PROMPT,
+)
 
 app = FastAPI(title="Hint-Based Math Tutor API")
 
@@ -92,9 +96,71 @@ def _session(sid: str) -> Session:
     return s
 
 
+def _label(slug: str) -> str:
+    """'applications-of-derivatives' -> 'Applications of Derivatives'."""
+    small = {"of", "and", "to"}
+    words = [w if w in small else w.upper() if w in ("hcf", "lcm") else w.capitalize()
+             for w in slug.split("-")]
+    return " ".join(words)
+
+
+# Canned problems indexed by topic, so a searched topic with a sample is instant.
+_BY_TOPIC = {
+    "speed-distance-time": 0, "percentage": 1, "age": 2, "work-rate": 3,
+    "mensuration": 4, "compound-interest": 5, "quadratic-equations": 6,
+    "hcf-and-lcm": 7, "arithmetic-progressions": 8, "trigonometry": 9,
+    "probability": 10, "permutations-and-combinations": 11,
+    "coordinate-geometry": 12, "statistics": 13, "limits": 14,
+    "applications-of-derivatives": 15, "integrals": 16, "matrices": 17,
+    "vector-algebra": 18, "complex-numbers": 19,
+}
+
+
 @app.get("/api/samples")
 def samples():
     return SAMPLES
+
+
+@app.get("/api/topics")
+def topics(q: str = ""):
+    """Searchable topic list. Matches on the slug and the readable label."""
+    needle = q.strip().lower()
+    out = []
+    for slug in TOPICS:
+        if slug == "other":
+            continue
+        label = _label(slug)
+        if needle and needle not in slug.lower() and needle not in label.lower():
+            continue
+        idx = _BY_TOPIC.get(slug)
+        out.append({
+            "slug": slug,
+            "label": label,
+            "sample": SAMPLES[idx]["problem"] if idx is not None else None,
+        })
+    return out
+
+
+class TopicIn(BaseModel):
+    topic: str
+
+
+@app.post("/api/practice")
+def practice(body: TopicIn):
+    """Generate a fresh problem for a topic that has no canned sample."""
+    slug = (body.topic or "").strip()
+    if slug not in TOPICS:
+        raise HTTPException(400, "Unknown topic.")
+    try:
+        d = complete_json(PRACTICE_PROMPT.format(topic=_label(slug)), temperature=0.8)
+    except LLMError as e:
+        raise HTTPException(503, f"Could not generate a problem. {e}")
+    except ValueError as e:
+        raise HTTPException(502, f"Could not read the generated problem. ({e})")
+    problem = (d.get("problem") or "").strip()
+    if not problem:
+        raise HTTPException(502, "The model returned an empty problem. Try again.")
+    return {"topic": slug, "problem": problem}
 
 
 @app.post("/api/session")
